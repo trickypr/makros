@@ -1,0 +1,8 @@
+<enum> ::= 'emum' <identifier> ':' <indent> {<enum_body>} <dedent>
+
+<enum_body> ::= <identifier> [<arg_definition>] '\n'
+<arg_definition> ::= <tuple_args>
+<tuple_args> ::= '(' <tuple_arg> {',' <tuple_arg>} ')'
+<tuple_arg> ::= <identifier> [':' <type_specifier>]
+
+<identifier> ::= <letter> [<identifier>]

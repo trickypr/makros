@@ -1,0 +1,3 @@
+<import> ::= 'macro' 'import' <identifier>
+
+<identifier> ::= <letter> [<identifier>]

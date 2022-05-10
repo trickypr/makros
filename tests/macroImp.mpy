@@ -1,0 +1,9 @@
+macro import enum
+
+enum Test:
+    A
+    B(val1: str, val2: str)
+
+
+test1 = Test.A()
+print(isinstance(test1, Test.A))
