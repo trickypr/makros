@@ -1,9 +1,12 @@
+from os.path import isfile, join
+from os import listdir
 from pathlib import Path
 import tokenize
 from typing import Generator, List
 
 from registration.macro_def import MacroDef
 from tokens import Tokens
+from utils import progressBar
 
 
 def macro_file(file_name: str) -> str:
@@ -89,3 +92,24 @@ class PyMacro:
         out_path = str(file_path).replace('.mpy', '.py')
         with open(out_path, 'w') as file:
             file.write(output)
+
+
+def get_files(folder_name: str) -> List[str]:
+    all_items = [join(folder_name, item) for item in listdir(folder_name)]
+
+    folders = [item for item in all_items if not isfile(item)]
+    files = [item for item in all_items if isfile(item)]
+
+    for folder in folders:
+        files.extend(get_files(folder))
+
+    return files
+
+
+def translate_folder(folder_name: str, macro_instance: PyMacro = PyMacro()):
+    files = [
+        Path(file) for file in get_files(folder_name) if file.endswith('.mpy')
+    ]
+
+    for file in progressBar(files):
+        macro_instance.parse_file(file)
