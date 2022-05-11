@@ -166,8 +166,12 @@ class Translator(MacroTranslator):
                 for arg in ast.body.identifiers
             ]))
 
+        equal_override = pyx.create_func('__eq__', 'self, other',
+                                         "return isinstance(self, other)")
+
         return pyx.program(
-            pyx.create_class(ast.name, assign_function),
+            pyx.create_class(ast.name,
+                             pyx.program(assign_function, equal_override)),
             pyx.program(
                 ast.body.visit(self),
                 f"{self.parent_name}.__assign_enum_types__({', '.join(arg.name for arg in ast.body.identifiers)})\n\n\n"
