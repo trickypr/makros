@@ -178,7 +178,10 @@ class Translator(MacroTranslator):
             [item.visit(self) for item in ast.identifiers]))
 
     def enum_basic_item(self, ast: EnumBasicItem) -> str:
-        return pyx.create_class(ast.name, 'pass', extends=self.parent_name)
+        return pyx.create_class(ast.name,
+                                pyx.create_func('__str__', 'self',
+                                                f"return '{ast.name}'"),
+                                extends=self.parent_name)
 
     def enum_tuple_arg(self, ast: EnumTupleArg) -> str:
         return f"{ast.name}{f': {ast.item_type}' if ast.item_type else ''}"
@@ -186,11 +189,20 @@ class Translator(MacroTranslator):
     def enum_tuple_item(self, ast: EnumTupleItem) -> str:
         return pyx.create_class(
             ast.name,
-            pyx.create_func(
-                '__init__',
-                'self, ' + ', '.join([arg.visit(self) for arg in ast.args]),
-                '\n'.join(
-                    [f"self.{arg.name} = {arg.name}" for arg in ast.args])),
+            pyx.program(
+                pyx.create_func(
+                    '__init__',
+                    'self, ' + ', '.join([arg.visit(self)
+                                          for arg in ast.args]),
+                    '\n'.join([
+                        f"self.{arg.name} = {arg.name}" for arg in ast.args
+                    ])),
+
+                # Responsible for handling converting the output to a string
+                pyx.create_func(
+                    '__str__', 'self',
+                    f"return f'{ast.name}({', '.join([arg.name + ': {self.' + arg.name + '}' for arg in ast.args])})'"
+                )),
             extends=self.parent_name)
 
     def translate(self, ast: Enum) -> str:
