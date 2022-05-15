@@ -1,0 +1,30 @@
+macro import enum
+
+enum Test:
+    A
+    B(val1: str, val2: str)
+    Frog
+
+#
+# Test cases
+#
+
+testA = Test.A()
+testB = Test.B("a", "b")
+testFrog = Test.Frog()
+
+print("[TEST: Enum] Basic equality")
+
+assert testA == Test.A
+assert testB == Test.B
+assert testFrog == Test.Frog
+
+assert Test.A == testA
+assert Test.B == testB
+assert Test.Frog == testFrog
+
+print("[TEST: Enum] Not equality")
+
+assert testA != Test.B
+assert testB != Test.A
+assert testFrog != Test.A
