@@ -9,6 +9,7 @@ class Tokens:
 
     filter_new_lines = False
     filter_logical_lines = True
+    filter_comments = True
     """
     Filters logical line tokens. For more information about this type of token,
     see: https://docs.python.org/3/library/token.html#token.NL
@@ -25,9 +26,13 @@ class Tokens:
     def next(self) -> tokenize.TokenInfo:
         self.current_token = next(self.internal_token)
 
-        if (self.filter_logical_lines and self.current_token.type
-                == token.NL) or (self.filter_new_lines and
-                                 self.current_token.type == tokenize.NEWLINE):
+        # print(self.current_token)
+
+        if (self.filter_logical_lines and self.current_token.type == token.NL
+            ) or (self.filter_new_lines
+                  and self.current_token.type == tokenize.NEWLINE) or (
+                      self.filter_comments
+                      and self.current_token.type == tokenize.COMMENT):
             return self.next()
 
         return self.current_token
