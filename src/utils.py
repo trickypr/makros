@@ -1,3 +1,7 @@
+def getFileHash(path: str):
+    pass
+
+
 def progressBar(iterable,
                 prefix='',
                 suffix='',

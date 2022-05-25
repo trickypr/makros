@@ -1,8 +1,10 @@
+import json
 from os.path import isfile, join
 from os import listdir
 from pathlib import Path
 import tokenize
 from typing import Generator, List
+import hashlib
 
 from registration.macro_def import MacroDef
 from tokens import Tokens
@@ -15,12 +17,49 @@ def macro_file(file_name: str) -> str:
         file_name).__str__()
 
 
+def sha256sum(filename):
+    h = hashlib.sha256()
+    b = bytearray(128 * 1024)
+    mv = memoryview(b)
+    with open(filename, 'rb', buffering=0) as f:
+        while n := f.readinto(mv):
+            h.update(mv[:n])
+    return h.hexdigest()
+
+
 # macro_import = MacroDef('macro',
 #                         tokenize.TokenInfo(1, 'macro', (1, 1), (1, 1), ''),
 #                         macro_file('macroImport.py'))
 
 
 class PyMacro:
+    def __init__(self):
+        self.parse_macro_macros()
+
+    def parse_macro_macros(self):
+        file_path = Path(__file__).parent.joinpath('macros').__str__()
+        macro_hash = {}
+
+        if isfile(file_path + '.json'):
+            macro_hash = json.loads(open(file_path + '.json').read())
+
+        for file in progressBar(listdir(file_path), 'Parsing macros'):
+            if not isfile(join(file_path, file)):
+                continue
+
+            if not file.endswith('.mpy'):
+                continue
+
+            file_hash = sha256sum(join(file_path, file))
+            if macro_hash.__contains__(file) and file_hash == macro_hash[file]:
+                continue
+
+            self.parse_file(Path(join(file_path, file)))
+            macro_hash[file] = file_hash
+
+        with open(file_path + '.json', 'w') as file:
+            file.write(json.dumps(macro_hash))
+
     def get_tokens(
             self, file_path: str) -> Generator[tokenize.TokenInfo, None, None]:
         with tokenize.open(file_path) as file:
