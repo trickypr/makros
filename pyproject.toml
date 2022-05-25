@@ -8,6 +8,7 @@ license = "GPL-v3.0"
 [tool.poetry.dependencies]
 python = "^3.9"
 rich = "^12.4.1"
+more-itertools = "^8.13.0"
 
 [tool.poetry.dev-dependencies]
 

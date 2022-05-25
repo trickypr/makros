@@ -7,6 +7,7 @@ from typing import Generator, List
 from registration.macro_def import MacroDef
 from tokens import Tokens
 from utils import progressBar
+import macros.macro_import as macro_import
 
 
 def macro_file(file_name: str) -> str:
@@ -14,9 +15,9 @@ def macro_file(file_name: str) -> str:
         file_name).__str__()
 
 
-macro_import = MacroDef('macro',
-                        tokenize.TokenInfo(1, 'macro', (1, 1), (1, 1), ''),
-                        macro_file('macroImport.py'))
+# macro_import = MacroDef('macro',
+#                         tokenize.TokenInfo(1, 'macro', (1, 1), (1, 1), ''),
+#                         macro_file('macroImport.py'))
 
 
 class PyMacro:
@@ -27,29 +28,33 @@ class PyMacro:
             for token in tokens:
                 yield token
 
+    def tokens_to_list(
+        self, tokens: Generator[tokenize.TokenInfo, None, None]
+    ) -> List[tokenize.TokenInfo]:
+        return [token for token in tokens]
+
     def parse_file(self, file_path: Path) -> None:
         available_macros: List[MacroDef] = []
-        tokens = self.get_tokens(file_path)
+        raw_tokens = self.get_tokens(str(file_path))
+        tokens = Tokens(self.tokens_to_list(raw_tokens))
 
         current_line = 0
         output = ""
 
         for token in tokens:
-
             if token.type == 1:
                 if token.string == 'macro':
-                    Parser = macro_import.parser_module.Parser
-                    parser = Parser()
+                    parser = macro_import.Parser()
 
-                    macro_ast = parser.parse(Tokens(tokens))
+                    macro_ast = parser.parse(tokens)
                     # TODO: Better module resolution
                     available_macros.append(
                         MacroDef(
-                            macro_ast.module,
-                            tokenize.TokenInfo(1, macro_ast.module, (1, 1),
-                                               (1, 1), ''),
-                            macro_file(macro_ast.module + '.py')))
-                    output += f"# Macro imported: {macro_ast.module}\n"
+                            macro_ast.module.string,
+                            tokenize.TokenInfo(1, macro_ast.module.string,
+                                               (1, 1), (1, 1), ''),
+                            macro_file(macro_ast.module.string + '.py')))
+                    output += f"# Macro imported: {macro_ast.module.string}\n"
 
                     continue
 
@@ -60,7 +65,7 @@ class PyMacro:
                         Parser = macro.parser_module.Parser
                         parser = Parser()
 
-                        macro_ast = parser.parse(Tokens(tokens))
+                        macro_ast = parser.parse(tokens)
 
                         # If there is a linter, we should run it. There is not
                         # currently any linters, but may as well add the

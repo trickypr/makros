@@ -18,7 +18,7 @@ def get_files(folder_name: str) -> List[str]:
 files = [file for file in get_files('.')]
 
 for file in files:
-    if file.__contains__("__init__.mpy") or not file.endswith('.mpy'):
+    if file.__contains__("__main__.mpy") or not file.endswith('.mpy'):
         continue
 
     print(file)

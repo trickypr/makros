@@ -1,7 +1,7 @@
 import tokenize
 from macros.types import MacroParser, MacroTranslator
 from macros.utils import camel_to_snake
-from tokens import Tokens
+from tokens import TokenCase, Tokens
 
 import macros.pyx as pyx
 
@@ -17,7 +17,7 @@ class ASTBase():
 
 
 class Enum(ASTBase):
-    def __init__(self, name: str, body: ASTBase):
+    def __init__(self, name: tokenize.TokenInfo, body: ASTBase):
         self.name = name
         self.body = body
 
@@ -39,7 +39,7 @@ class EnumBody(ASTBase):
 
 
 class EnumBasicItem(ASTBase):
-    def __init__(self, name: str):
+    def __init__(self, name: tokenize.TokenInfo):
         self.name = name
 
     def __str__(self):
@@ -47,7 +47,8 @@ class EnumBasicItem(ASTBase):
 
 
 class EnumTupleArg(ASTBase):
-    def __init__(self, name: str, item_type: str or None):
+    def __init__(self, name: tokenize.TokenInfo, item_type: tokenize.TokenInfo
+                 or None):
         self.name = name
         self.item_type = item_type
 
@@ -56,7 +57,7 @@ class EnumTupleArg(ASTBase):
 
 
 class EnumTupleItem(ASTBase):
-    def __init__(self, name: str, args: list[EnumTupleArg]):
+    def __init__(self, name: tokenize.TokenInfo, args: list[EnumTupleArg]):
         self.name = name
         self.args = args
 
@@ -77,10 +78,6 @@ class Parser(MacroParser):
         # <arg_definition> ::= <tuple_args>
         # <tuple_args> ::= '(' <tuple_arg> {',' <tuple_arg>} ')'
 
-        tokens.verify_current("checking for opening of a tuple enum '('",
-                              type=tokenize.OP,
-                              string='(')
-
         args = []
 
         # This is a jank hack because of the lack of do while loops. Maybe that
@@ -90,36 +87,37 @@ class Parser(MacroParser):
         while do_while:
             # <tuple_arg> ::= <identifier> [':' <type_specifier>]
 
-            identifier = tokens.verify_next(
-                "checking for enum item identifier", type=tokenize.NAME).string
+            identifier = tokens.consume(TokenCase().type(tokenize.NAME),
+                                        "checking for enum item identifier")
             type = None
 
-            if tokens.check_next(type=tokenize.OP, string=":"):
-                type = tokens.verify_next("checking for enum item type",
-                                          type=tokenize.NAME).string
+            if tokens.match(TokenCase().type(tokenize.OP).string(":")):
+                type = tokens.consume(TokenCase().type(tokenize.NAME),
+                                      "checking for enum item type")
 
             args.append(EnumTupleArg(identifier, type))
 
-            do_while = tokens.check_next(type=tokenize.OP, string=",")
+            do_while = tokens.match(TokenCase().type(tokenize.OP).string(","))
 
-        tokens.verify_current("checking for closing of a tuple enum ')'",
-                              type=tokenize.OP,
-                              string=')')
-        tokens.next()
+        tokens.consume(TokenCase().type(tokenize.OP).string(')'),
+                       "checking for closing of a tuple enum ')'")
+        # TODO: What does this do?
+        # tokens.next()
 
         return args
 
     def get_enum_item_identifier(self, tokens: Tokens) -> ASTBase:
         # <enum_body> ::= <identifier> [<arg_definition>] '\n'
 
-        identifier = tokens.verify_current("checking for enum item identifier",
-                                           tokenize.NAME).string
+        identifier = tokens.consume(TokenCase().type(tokenize.NAME),
+                                    "checking for enum item identifier")
         args = None
 
-        if tokens.check_next(type=tokenize.OP, string="("):
+        if tokens.match(TokenCase().type(tokenize.OP).string("(")):
             args = self.arg_definition(tokens)
 
-        tokens.verify_current("checking for newline", type=tokenize.NEWLINE)
+        tokens.consume(TokenCase().type(tokenize.NEWLINE),
+                       "checking for newline")
 
         if args is not None:
             return EnumTupleItem(identifier, args)
@@ -131,23 +129,28 @@ class Parser(MacroParser):
 
         # {<enum_body>}
         while True:
-            if tokens.check_next(type=tokenize.DEDENT):
+            if tokens.check(TokenCase().type(tokenize.NEWLINE)):
+                continue
+
+            if tokens.match(TokenCase().type(tokenize.DEDENT)):
                 break
+
+            print(f"Prev: {tokens.previous()}, Peek: {tokens.peek()}")
 
             items.append(self.get_enum_item_identifier(tokens))
 
         return EnumBody(items)
 
     def enum(self, tokens: Tokens) -> EnumBody:
-        tokens.consume(tokenize.INDENT, "checking for indent")
+        tokens.consume(TokenCase().type(tokenize.INDENT), "Expected indent")
         return self.enum_body(tokens)
 
     def parse(self, tokens: Tokens) -> any:
-        identifier = tokens.verify_next("checking for enum name",
-                                        type=tokenize.NAME).string
+        identifier = tokens.consume(TokenCase().type(tokenize.NAME),
+                                    "Expected the enum name")
 
-        tokens.consume(tokenize.OP, "checking for ':'", string=":")
-        tokens.consume(tokenize.NEWLINE, "checking for newline")
+        tokens.consume(TokenCase().type(tokenize.OP), "Expected ':'")
+        tokens.consume(TokenCase().type(tokenize.NEWLINE), "Expected newline")
 
         return Enum(identifier, self.enum(tokens))
 
@@ -156,13 +159,13 @@ class Translator(MacroTranslator):
     parent_name: str
 
     def enum(self, ast: Enum):
-        self.parent_name = ast.name
+        self.parent_name = ast.name.string
 
         assign_function = pyx.create_func(
-            '__assign_enum_types__', ', '.join(
-                [camel_to_snake(arg.name) for arg in ast.body.identifiers]),
-            '\n'.join([
-                f"{self.parent_name}.{arg.name} = {camel_to_snake(arg.name)}"
+            '__assign_enum_types__', ', '.join([
+                camel_to_snake(arg.name.string) for arg in ast.body.identifiers
+            ]), '\n'.join([
+                f"{self.parent_name}.{arg.name.string} = {camel_to_snake(arg.name.string )}"
                 for arg in ast.body.identifiers
             ]))
 
@@ -170,11 +173,11 @@ class Translator(MacroTranslator):
                                          "return isinstance(self, other)")
 
         return pyx.program(
-            pyx.create_class(ast.name,
+            pyx.create_class(ast.name.string,
                              pyx.program(assign_function, equal_override)),
             pyx.program(
                 ast.body.visit(self),
-                f"{self.parent_name}.__assign_enum_types__({', '.join(arg.name for arg in ast.body.identifiers)})\n\n\n"
+                f"{self.parent_name}.__assign_enum_types__({', '.join(arg.name.string for arg in ast.body.identifiers)})\n\n\n"
             ))
 
     def enum_body(self, ast: EnumBody) -> str:
@@ -182,30 +185,31 @@ class Translator(MacroTranslator):
             [item.visit(self) for item in ast.identifiers]))
 
     def enum_basic_item(self, ast: EnumBasicItem) -> str:
-        return pyx.create_class(ast.name,
+        return pyx.create_class(ast.name.string,
                                 pyx.create_func('__str__', 'self',
-                                                f"return '{ast.name}'"),
+                                                f"return '{ast.name.string}'"),
                                 extends=self.parent_name)
 
     def enum_tuple_arg(self, ast: EnumTupleArg) -> str:
-        return f"{ast.name}{f': {ast.item_type}' if ast.item_type else ''}"
+        return f"{ast.name.string}{f': {ast.item_type.string}' if ast.item_type else ''}"
 
     def enum_tuple_item(self, ast: EnumTupleItem) -> str:
         return pyx.create_class(
-            ast.name,
+            ast.name.string,
             pyx.program(
                 pyx.create_func(
                     '__init__',
                     'self, ' + ', '.join([arg.visit(self)
                                           for arg in ast.args]),
                     '\n'.join([
-                        f"self.{arg.name} = {arg.name}" for arg in ast.args
+                        f"self.{arg.name.string} = {arg.name.string}"
+                        for arg in ast.args
                     ])),
 
                 # Responsible for handling converting the output to a string
                 pyx.create_func(
                     '__str__', 'self',
-                    f"return f'{ast.name}({', '.join([arg.name + ': {self.' + arg.name + '}' for arg in ast.args])})'"
+                    f"return f'{ast.name.string}({', '.join([arg.name.string + ': {self.' + arg.name.string + '}' for arg in ast.args])})'"
                 )),
             extends=self.parent_name)
 
