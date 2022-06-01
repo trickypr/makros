@@ -1,0 +1,5 @@
+<namespace> := 'namespace' identifier ':' indent <body> dedent
+
+<body> := <statement>*
+
+<statement> := 'export' name identifier any

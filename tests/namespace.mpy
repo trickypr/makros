@@ -1,0 +1,10 @@
+macro import namespace
+
+namespace test:
+    export def test():
+        print("Hello World")
+    
+    def internal():
+        pass
+
+print('Hello world!')
