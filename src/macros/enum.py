@@ -47,8 +47,7 @@ class EnumBasicItem(ASTBase):
 
 
 class EnumTupleArg(ASTBase):
-    def __init__(self, name: tokenize.TokenInfo, item_type: tokenize.TokenInfo
-                 or None):
+    def __init__(self, name: tokenize.TokenInfo, item_type: str or None):
         self.name = name
         self.item_type = item_type
 
@@ -68,9 +67,7 @@ class EnumTupleItem(ASTBase):
 )'''
 
 
-# print(ASTBase.__dict__)
 ASTBase.__assign_enum_types__(Enum, EnumBody)
-# print(ASTBase.__dict__)
 
 
 class Parser(MacroParser):
@@ -89,11 +86,23 @@ class Parser(MacroParser):
 
             identifier = tokens.consume(TokenCase().type(tokenize.NAME),
                                         "checking for enum item identifier")
-            type = None
+            type = ''
 
             if tokens.match(TokenCase().type(tokenize.OP).string(":")):
                 type = tokens.consume(TokenCase().type(tokenize.NAME),
-                                      "checking for enum item type")
+                                      "checking for enum item type").string
+
+                while tokens.match(TokenCase().type(tokenize.OP).string("."),
+                                   TokenCase().type(tokenize.OP).string("["),
+                                   TokenCase().type(tokenize.OP).string("]")):
+                    type += tokens.previous().string
+
+                    if tokens.peek().type == tokenize.OP and tokens.peek(
+                    ).string == ")":
+                        break
+
+                    type += tokens.consume(TokenCase().type(
+                        tokenize.NAME), "checking for enum item type").string
 
             args.append(EnumTupleArg(identifier, type))
 
@@ -135,8 +144,6 @@ class Parser(MacroParser):
             if tokens.match(TokenCase().type(tokenize.DEDENT)):
                 break
 
-            print(f"Prev: {tokens.previous()}, Peek: {tokens.peek()}")
-
             items.append(self.get_enum_item_identifier(tokens))
 
         return EnumBody(items)
@@ -177,8 +184,9 @@ class Translator(MacroTranslator):
                              pyx.program(assign_function, equal_override)),
             pyx.program(
                 ast.body.visit(self),
-                f"{self.parent_name}.__assign_enum_types__({', '.join(arg.name.string for arg in ast.body.identifiers)})\n\n\n"
-            ))
+                f"{self.parent_name}.__assign_enum_types__({', '.join(arg.name.string for arg in ast.body.identifiers)})\n\n\n",
+                *[f'del({arg.name.string})'
+                  for arg in ast.body.identifiers], '\n'))
 
     def enum_body(self, ast: EnumBody) -> str:
         return pyx.program("\n".join(
@@ -191,7 +199,7 @@ class Translator(MacroTranslator):
                                 extends=self.parent_name)
 
     def enum_tuple_arg(self, ast: EnumTupleArg) -> str:
-        return f"{ast.name.string}{f': {ast.item_type.string}' if ast.item_type else ''}"
+        return f"{ast.name.string}{f': {ast.item_type}' if ast.item_type else ''}"
 
     def enum_tuple_item(self, ast: EnumTupleItem) -> str:
         return pyx.create_class(
