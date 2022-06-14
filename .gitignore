@@ -1,3 +1,6 @@
 __pycache__
 tests/*.py
 src/macros.json
+
+# Do not include macros that require boostraps
+src/macros/namespace.py
