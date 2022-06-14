@@ -95,7 +95,9 @@ class PyMacro:
                 Translator = macro.parser_module.Translator
                 translator = Translator()
 
-                return [True, translator.translate(macro_ast)]
+                # Don't trust the developer (probably me) to provide leading and
+                # trailing new lines
+                return [True, "\n" + translator.translate(macro_ast) + "\n"]
 
         return [False, ""]
 
