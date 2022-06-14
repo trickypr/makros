@@ -59,4 +59,4 @@ print(
 print('\t| poetry shell')
 print()
 
-os.system('coverage run -m pytest')
+os.system('coverage json pytest')
