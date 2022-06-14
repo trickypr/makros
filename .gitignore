@@ -5,6 +5,7 @@ tests/*.py
 !tests/__main__.py
 .coverage
 coverage.json
+coverage.xml
 .pytest_cache
 
 # Do not include macros that require boostraps

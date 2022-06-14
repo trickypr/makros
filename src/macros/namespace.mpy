@@ -31,9 +31,9 @@ class Parser(MacroParser):
         tab = ' ' * 4
 
         while not tokens.is_at_end():
-            if current_line != tokens.peek().start[0]:
-                current_line = tokens.peek().start[0]
-                lines.append(tokens.peek().line)
+            if current_line != tokens.previous().start[0]:
+                current_line = tokens.previous().start[0]
+                lines.append(tokens.previous().line)
             
             if tokens.match(TokenCase().type(tokenize.NAME).string('export')):
                 tokens.advance()
@@ -53,8 +53,15 @@ class Parser(MacroParser):
             else:
                 tokens.advance()
 
-            if indent == 0:
+            if indent <= 0:
+                # HACK: The last option here will be an extra line that we don't
+                # want. Instead of fixing the bug, lets just remove the extra
+                # line
+                lines.pop()
                 break
+
+        if tokens.is_at_end():
+            tokens.error("Expected dedent, found end of file")
 
         return NamespaceAST.Body('\n'.join([line.replace(tab, '', 1) for line in lines]), statements)
 
@@ -80,6 +87,12 @@ class Translator(MacroTranslator):
 
     def namespace(self, ast: NamespaceAST.Namespace) -> str:
         namespace_def_function = f'__{ast.identifier.string}_namespace_creator'
+
+        print()
+        print()
+        print(ast.body.contents)
+        print()
+        print()
 
         namespace_exports = [f'self.{export.identifier.string} = {export.identifier.string}' for export in ast.body.stmts]
         namespace_class = create_class(namespace_def_function, create_func('__init__', 'self', program(ast.body.contents, *namespace_exports)))

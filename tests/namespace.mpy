@@ -1,4 +1,5 @@
 macro import namespace
+import pytest
 
 namespace test:
     def internal():
@@ -8,30 +9,4 @@ namespace test:
         internal()
         print("Hello World")
 
-print('Hello world!')
 test.test()
-
-# Start of namespace
-
-# Macro imported: namespace
-
-
-#class __test_namespace_creator():
-#    def __init__(self):
-#        def internal():
-#            pass
-#
-#        def test():
-#            internal()
-#
-#            print("Hello World")
-#
-#        self.test = test
-
-
-#test = __test_namespace_creator()
-#del __test_namespace_creator
-## End of namespace testprint('Hello world!')
-#test.test()
-
-

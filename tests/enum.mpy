@@ -1,4 +1,5 @@
 macro import enum
+import pytest
 
 enum Test:
     A
@@ -8,7 +9,6 @@ enum Test:
 #
 # Test cases
 #
-
 testA = Test.A()
 testB = Test.B("a", "b")
 testFrog = Test.Frog()

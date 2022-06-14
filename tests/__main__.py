@@ -40,6 +40,7 @@ for file_name in progressBar(files):
     with open(test_host, 'w') as file:
         file.write(f'''
 import pytest
+from coverage.execfile import run_python_file
 
 # This jank allows for us to import files from the src folder
 import sys
@@ -50,7 +51,8 @@ from lib import translate_file
 
 def test_answer():
     translate_file('{file_name}')
-    exec(open('{file_name.replace('.mpy', '.py')}').read())
+    run_python_file(['{file_name.replace('.mpy', '.py')}'])
+    # exec(open('{file_name.replace('.mpy', '.py')}').read())
 ''')
 
 print(
@@ -59,4 +61,6 @@ print(
 print('\t| poetry shell')
 print()
 
-os.system('coverage json pytest')
+print(os.getcwd())
+
+os.system(f'pytest --cov={os.getcwd()} --cov-report xml tests/')
