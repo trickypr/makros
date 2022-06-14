@@ -3,8 +3,9 @@ from os.path import isfile, join
 from os import listdir
 from pathlib import Path
 import tokenize
-from typing import Generator, List
+from typing import Generator, List, Tuple
 import hashlib
+from xmlrpc.client import Boolean
 
 from registration.macro_def import MacroDef
 from tokens import Tokens
@@ -43,7 +44,8 @@ class PyMacro:
         if isfile(file_path + '.json'):
             macro_hash = json.loads(open(file_path + '.json').read())
 
-        for file in progressBar(listdir(file_path), 'Parsing macros'):
+        # for file in progressBar(listdir(file_path), 'Parsing macros'):
+        for file in listdir(file_path):
             if not isfile(join(file_path, file)):
                 continue
 
@@ -72,6 +74,32 @@ class PyMacro:
     ) -> List[tokenize.TokenInfo]:
         return [token for token in tokens]
 
+    def parse_macro(self, tokens: Tokens, token: tokenize.Token,
+                    available_macros: List[MacroDef]) -> Tuple[Boolean, str]:
+        for macro in available_macros:
+            if macro.trigger_token.string == token.string:
+                Parser = macro.parser_module.Parser
+                parser = Parser()
+
+                macro_ast = parser.parse(tokens)
+
+                # If there is a linter, we should run it. There is not
+                # currently any linters, but may as well add the
+                # infrastructure.
+                if hasattr(macro.parser_module, 'Linter'):
+                    Linter = macro.parser_module.Linter
+                    linter = Linter()
+                    linter.lint(macro_ast)
+
+                # Passes the AST into a translator module. Responsible
+                # for creating python string from the AST.
+                Translator = macro.parser_module.Translator
+                translator = Translator()
+
+                return [True, translator.translate(macro_ast)]
+
+        return [False, ""]
+
     def parse_file(self, file_path: Path) -> None:
         available_macros: List[MacroDef] = []
         raw_tokens = self.get_tokens(str(file_path))
@@ -81,7 +109,7 @@ class PyMacro:
         output = ""
 
         for token in tokens:
-            if token.type == 1:
+            if token.type == tokenize.NAME:
                 if token.string == 'macro':
                     parser = macro_import.Parser()
 
@@ -97,42 +125,21 @@ class PyMacro:
 
                     continue
 
-                found_macro = False
+                enabled, returned = self.parse_macro(tokens, token,
+                                                     available_macros)
 
-                for macro in available_macros:
-                    if macro.trigger_token.string == token.string:
-                        Parser = macro.parser_module.Parser
-                        parser = Parser()
+                output += returned
 
-                        macro_ast = parser.parse(tokens)
-
-                        # If there is a linter, we should run it. There is not
-                        # currently any linters, but may as well add the
-                        # infrastructure.
-                        if hasattr(macro.parser_module, 'Linter'):
-                            Linter = macro.parser_module.Linter
-                            linter = Linter()
-                            linter.lint(macro_ast)
-
-                        # Passes the AST into a translator module. Responsible
-                        # for creating python string from the AST.
-                        Translator = macro.parser_module.Translator
-                        translator = Translator()
-                        output += translator.translate(macro_ast)
-
-                        found_macro = True
-                        break
-
-                if found_macro:
+                if enabled:
                     continue
 
-                # We want to only keep one of each line, and only lines without
-                # a macro on them. This is my current solution, but if you have
-                # a better one, feel free to create a PR
+            # We want to only keep one of each line, and only lines without
+            # a macro on them. This is my current solution, but if you have
+            # a better one, feel free to create a PR
             if token.start[
                     0] > current_line and token.type != tokenize.DEDENT and token.type != tokenize.NEWLINE:
-                    output += token.line
-                    current_line = token.start[0]
+                output += token.line
+                current_line = token.start[0]
 
         out_path = str(file_path).replace('.mpy', '.py')
         with open(out_path, 'w') as file:
