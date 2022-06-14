@@ -129,7 +129,8 @@ class PyMacro:
                 # We want to only keep one of each line, and only lines without
                 # a macro on them. This is my current solution, but if you have
                 # a better one, feel free to create a PR
-                if token.start[0] != current_line:
+            if token.start[
+                    0] > current_line and token.type != tokenize.DEDENT and token.type != tokenize.NEWLINE:
                     output += token.line
                     current_line = token.start[0]
 
