@@ -157,10 +157,20 @@ def get_files(folder_name: str) -> List[str]:
     return files
 
 
-def translate_folder(folder_name: str, macro_instance: PyMacro = PyMacro()):
+def translate_file(
+    file_name: str, macro_instance: PyMacro = PyMacro()) -> PyMacro:
+    macro_instance.parse_file(Path(file_name))
+
+    return macro_instance
+
+
+def translate_folder(
+    folder_name: str, macro_instance: PyMacro = PyMacro()) -> PyMacro:
     files = [
         Path(file) for file in get_files(folder_name) if file.endswith('.mpy')
     ]
 
     for file in progressBar(files):
         macro_instance.parse_file(file)
+
+    return macro_instance

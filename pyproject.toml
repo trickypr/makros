@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "python-macros"
+name = "makros"
 version = "0.1.0"
 description = "Modify and extend the Python language with (relative) ease"
 authors = ["trickypr <trickypr@icloud.com>"]
@@ -7,10 +7,10 @@ license = "GPL-v3.0"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-rich = "^12.4.1"
-more-itertools = "^8.13.0"
 
 [tool.poetry.dev-dependencies]
+pytest = "^7.1.2"
+coverage = "^6.4.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

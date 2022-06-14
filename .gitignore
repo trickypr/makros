@@ -1,6 +1,13 @@
 __pycache__
+
+# Test ignores
 tests/*.py
-src/macros.json
+!tests/__main__.py
+.coverage
+.pytest_cache
 
 # Do not include macros that require boostraps
+# macros.json is used for tracking the boostraped macros, so it can be ignored
+# as well
+src/macros.json
 src/macros/namespace.py
