@@ -178,7 +178,7 @@ class Translator(MacroTranslator):
         self.parent_name = ast.name.string
 
         assign_function = pyx.create_func(
-            '__assign_enum_types__', ', '.join([
+            '__assign_enum_types__', self.parent_name + ', ' + ', '.join([
                 camel_to_snake(arg.name.string) for arg in ast.body.identifiers
             ]), '\n'.join([
                 f"{self.parent_name}.{arg.name.string} = {camel_to_snake(arg.name.string )}"
@@ -194,7 +194,7 @@ class Translator(MacroTranslator):
                              extends=ast.extends),
             pyx.program(
                 ast.body.visit(self),
-                f"{self.parent_name}.__assign_enum_types__({', '.join(arg.name.string for arg in ast.body.identifiers)})\n\n\n",
+                f"{self.parent_name}.__assign_enum_types__({self.parent_name}, {', '.join(arg.name.string for arg in ast.body.identifiers)})\n\n\n",
                 *[f'del({arg.name.string})'
                   for arg in ast.body.identifiers], '\n'))
 
