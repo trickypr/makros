@@ -17,13 +17,16 @@ class ASTBase():
 
 
 class Enum(ASTBase):
-    def __init__(self, name: tokenize.TokenInfo, body: ASTBase):
+    def __init__(self, name: tokenize.TokenInfo, extends: str or None,
+                 body: ASTBase):
         self.name = name
+        self.extends = extends
         self.body = body
 
     def __str__(self):
         return f'''Enum(
     {self.name},
+    {self.extends},
     {self.body}
 )'''
 
@@ -110,8 +113,6 @@ class Parser(MacroParser):
 
         tokens.consume(TokenCase().type(tokenize.OP).string(')'),
                        "checking for closing of a tuple enum ')'")
-        # TODO: What does this do?
-        # tokens.next()
 
         return args
 
@@ -156,10 +157,18 @@ class Parser(MacroParser):
         identifier = tokens.consume(TokenCase().type(tokenize.NAME),
                                     "Expected the enum name")
 
+        do_while = tokens.match(TokenCase().type(tokenize.OP).string("("))
+        extends = '' if do_while else None
+
+        while do_while:
+            extends += tokens.advance().string
+            do_while = not tokens.match(TokenCase().type(
+                tokenize.OP).string(")"))
+
         tokens.consume(TokenCase().type(tokenize.OP), "Expected ':'")
         tokens.consume(TokenCase().type(tokenize.NEWLINE), "Expected newline")
 
-        return Enum(identifier, self.enum(tokens))
+        return Enum(identifier, extends, self.enum(tokens))
 
 
 class Translator(MacroTranslator):
@@ -181,7 +190,8 @@ class Translator(MacroTranslator):
 
         return pyx.program(
             pyx.create_class(ast.name.string,
-                             pyx.program(assign_function, equal_override)),
+                             pyx.program(assign_function, equal_override),
+                             extends=ast.extends),
             pyx.program(
                 ast.body.visit(self),
                 f"{self.parent_name}.__assign_enum_types__({', '.join(arg.name.string for arg in ast.body.identifiers)})\n\n\n",

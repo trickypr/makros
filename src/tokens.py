@@ -39,15 +39,17 @@ class Tokens:
     """
     filter_comments = True
 
-    def __init__(self, tokens: List[tokenize.TokenInfo]):
+    def __init__(self, tokens: List[tokenize.TokenInfo], filename: str):
+        # self.internal_token = tokens
+        self.filename = filename
         self.internal_token = list(
             filter(lambda x: x.type != token.NL and x.type != token.COMMENT,
                    tokens))
 
-    def error(self, token: tokenize.TokenInfo, message: str):
+    def error(self, token_something_else: tokenize.TokenInfo, message: str):
         # TODO: Better error handling
         raise Exception(
-            f"At line {token.start[1]} ({token.tok_name[token.type]}['{token.string}']), {message}\n\t|{token.line}"
+            f"At line {token_something_else.start[1]} ({token.tok_name[token_something_else.type]}['{token_something_else.string}']) in {self.filename}, {message}\n\t|{token_something_else.line}"
         )
 
     def peek(self) -> tokenize.TokenInfo:

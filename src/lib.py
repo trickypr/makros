@@ -44,8 +44,7 @@ class PyMacro:
         if isfile(file_path + '.json'):
             macro_hash = json.loads(open(file_path + '.json').read())
 
-        # for file in progressBar(listdir(file_path), 'Parsing macros'):
-        for file in listdir(file_path):
+        for file in progressBar(listdir(file_path), 'Parsing macros'):
             if not isfile(join(file_path, file)):
                 continue
 
@@ -103,7 +102,7 @@ class PyMacro:
     def parse_file(self, file_path: Path) -> None:
         available_macros: List[MacroDef] = []
         raw_tokens = self.get_tokens(str(file_path))
-        tokens = Tokens(self.tokens_to_list(raw_tokens))
+        tokens = Tokens(self.tokens_to_list(raw_tokens), str(file_path))
 
         current_line = 0
         output = ""
