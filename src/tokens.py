@@ -1,8 +1,6 @@
-from pprint import pprint
 import token
 import tokenize
 from typing import List
-from xmlrpc.client import boolean
 
 
 class TokenCase:
@@ -42,7 +40,6 @@ class Tokens:
 
     def __init__(self, tokens: List[tokenize.TokenInfo], filename: str):
         # self.internal_token = tokens
-        pprint(tokens)
         self.filename = filename
         self.internal_token = list(
             filter(lambda x: x.type != token.NL and x.type != token.COMMENT,
@@ -70,7 +67,7 @@ class Tokens:
 
         return self.previous()
 
-    def is_at_end(self) -> boolean:
+    def is_at_end(self) -> bool:
         """
         Returns true if the next token is an end marker
         """

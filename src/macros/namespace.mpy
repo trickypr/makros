@@ -88,12 +88,6 @@ class Translator(MacroTranslator):
     def namespace(self, ast: NamespaceAST.Namespace) -> str:
         namespace_def_function = f'__{ast.identifier.string}_namespace_creator'
 
-        print()
-        print()
-        print(ast.body.contents)
-        print()
-        print()
-
         namespace_exports = [f'self.{export.identifier.string} = {export.identifier.string}' for export in ast.body.stmts]
         namespace_class = create_class(namespace_def_function, create_func('__init__', 'self', program(ast.body.contents, *namespace_exports)))
 
