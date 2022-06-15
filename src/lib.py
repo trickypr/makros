@@ -27,37 +27,47 @@ def sha256sum(filename):
     return h.hexdigest()
 
 
-# macro_import = MacroDef('macro',
-#                         tokenize.TokenInfo(1, 'macro', (1, 1), (1, 1), ''),
-#                         macro_file('macroImport.py'))
-
-
 class PyMacro:
     def __init__(self):
-        self.parse_macro_macros()
+        self.bootstrap()
 
-    def parse_macro_macros(self):
-        file_path = Path(__file__).parent.joinpath('macros').__str__()
+    def bootstrap_file(self, folder_path, file, macro_hash):
+        if not isfile(join(folder_path, file)):
+            return
+
+        if not file.endswith('.mpy'):
+            return
+
+        file_hash = sha256sum(join(folder_path, file))
+        if macro_hash.__contains__(
+                folder_path + file) and file_hash == macro_hash[folder_path +
+                                                                file]:
+            return
+
+        self.parse_file(Path(join(folder_path, file)))
+
+        return file_hash
+
+    def bootstrap(self) -> None:
+        folders = ['macros', 'registration']
+        hash_file = Path(__file__).parent.joinpath(
+            'macros').__str__() + '.json'
+
         macro_hash = {}
 
-        if isfile(file_path + '.json'):
-            macro_hash = json.loads(open(file_path + '.json').read())
+        if isfile(hash_file):
+            macro_hash = json.loads(open(hash_file).read())
 
-        for file in progressBar(listdir(file_path), 'Parsing macros'):
-            if not isfile(join(file_path, file)):
-                continue
+        for folder in folders:
+            folder_path = Path(__file__).parent.joinpath(folder).__str__()
 
-            if not file.endswith('.mpy'):
-                continue
+            for file in progressBar(listdir(folder_path), 'Parsing macros'):
+                new_hash = self.bootstrap_file(folder_path, file, macro_hash)
 
-            file_hash = sha256sum(join(file_path, file))
-            if macro_hash.__contains__(file) and file_hash == macro_hash[file]:
-                continue
+                if new_hash:
+                    macro_hash[folder_path + file] = new_hash
 
-            self.parse_file(Path(join(file_path, file)))
-            macro_hash[file] = file_hash
-
-        with open(file_path + '.json', 'w') as file:
+        with open(hash_file, 'w') as file:
             file.write(json.dumps(macro_hash))
 
     def parse_macro(self, tokens: Tokens, token: tokenize.Token,
