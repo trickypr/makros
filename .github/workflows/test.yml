@@ -24,4 +24,6 @@ jobs:
           chmod +x codecov
           ./codecov -t ${CODECOV_TOKEN}
       - name: Upload to codacy
-        run: bash <(curl -Ls https://coverage.codacy.com/get.sh)
+        run: |
+          export CODACY_PROJECT_TOKEN=${CODACY_PROJECT_TOKEN}
+          bash <(curl -Ls https://coverage.codacy.com/get.sh)
