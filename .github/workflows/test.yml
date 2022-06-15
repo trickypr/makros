@@ -23,7 +23,7 @@ jobs:
           curl -Os https://uploader.codecov.io/latest/linux/codecov
           chmod +x codecov
           ./codecov -t ${CODECOV_TOKEN}
-      - name: Upload to codacy
-        run: |
-          export CODACY_PROJECT_TOKEN=${CODACY_PROJECT_TOKEN}
-          bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml --project-token ${CODACY_PROJECT_TOKEN}
+      - name: Run codacy-coverage-reporter
+        uses: codacy/codacy-coverage-reporter-action@v1
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
