@@ -43,7 +43,13 @@ for file_name in progressBar(files):
 import pytest
 from coverage.execfile import run_python_file
 
+import sys
+import os
+
+old_cwd = os.getcwd()
+sys.path.append(os.getcwd() + '/src')
 from lib import translate_file
+sys.path.append(old_cwd)
 
 def test_answer():
     translate_file('{file_name}')
