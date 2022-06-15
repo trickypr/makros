@@ -1,5 +1,4 @@
-from secrets import token_urlsafe
-import token
+\import token
 import tokenize
 from typing import List
 import pytest
@@ -27,8 +26,8 @@ class TestTokenCase:
 
 
 def includes_tokens(checker: TokenCase, tokens: List[tokenize.TokenInfo]):
-    for token in tokens:
-        if checker.check(token):
+    for individual_token in tokens:
+        if checker.check(individual_token):
             return True
 
     return False

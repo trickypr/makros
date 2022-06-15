@@ -3,7 +3,7 @@ from os.path import isfile, join
 from os import listdir
 from pathlib import Path
 import tokenize
-from typing import Generator, List, Tuple
+from typing import List, Tuple
 import hashlib
 
 from registration.macro_def import MacroDef

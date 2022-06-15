@@ -1,4 +1,3 @@
-import os
 from typing import List
 from os import listdir
 from os.path import join, isfile

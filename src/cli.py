@@ -1,5 +1,4 @@
 import argparse
-from ast import arg
 import pathlib
 
 from lib import translate_folder

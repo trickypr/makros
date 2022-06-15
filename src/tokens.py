@@ -99,7 +99,7 @@ class Tokens:
         return False
 
     def __iter__(self):
-        """The actual iterator is created in the __next__ function"""
+        """The actual iterator is created in the __next__ function."""
         return self
 
     def __next__(self) -> tokenize.TokenInfo:
