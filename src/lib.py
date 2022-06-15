@@ -5,7 +5,6 @@ from pathlib import Path
 import tokenize
 from typing import Generator, List, Tuple
 import hashlib
-from xmlrpc.client import Boolean
 
 from registration.macro_def import MacroDef
 from tokens import Tokens
@@ -74,7 +73,7 @@ class PyMacro:
         return [token for token in tokens]
 
     def parse_macro(self, tokens: Tokens, token: tokenize.Token,
-                    available_macros: List[MacroDef]) -> Tuple[Boolean, str]:
+                    available_macros: List[MacroDef]) -> Tuple[bool, str]:
         for macro in available_macros:
             if macro.trigger_token.string == token.string:
                 Parser = macro.parser_module.Parser

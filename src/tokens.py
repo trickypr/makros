@@ -84,7 +84,7 @@ class Tokens:
 
         self.error(self.peek(), failure_message)
 
-    def check(self, checker: TokenCase) -> boolean:
+    def check(self, checker: TokenCase) -> bool:
         if self.is_at_end():
             return False
 
