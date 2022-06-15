@@ -1,3 +1,7 @@
+import tokenize
+from typing import Generator, List, TypeVar
+
+
 def getFileHash(path: str):
     pass
 
@@ -56,3 +60,17 @@ def progressBar(iterable,
     # Inelegant, inefficient, but functional
     max_length = len(f"{prefix} |{fill * length}| {'100.0%'} {suffix}")
     print(" " * max_length, end=printEnd)
+
+
+def get_tokens(file_path: str) -> Generator[tokenize.TokenInfo, None, None]:
+    with tokenize.open(file_path) as file:
+        tokens = tokenize.generate_tokens(file.readline)
+        for token in tokens:
+            yield token
+
+
+T = TypeVar('T')
+
+
+def tokens_to_list(tokens: Generator[T, None, None]) -> List[T]:
+    return [token for token in tokens]

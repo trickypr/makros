@@ -25,14 +25,15 @@ def get_files(folder_name: str) -> List[str]:
 print("Preparing for pytest")
 print("====================")
 
-files = [file for file in get_files('./tests/')]
+files = [file for file in get_files('./tests/macros')]
 
 for file_name in progressBar(files):
     if not file_name.endswith('.mpy'):
         continue
 
     test_host = file_name.replace('.mpy',
-                                  '.py').replace('./tests/', './tests/test_')
+                                  '.py').replace('./tests/macros/',
+                                                 './tests/macros/test_')
 
     if os.path.exists(test_host):
         continue
@@ -42,17 +43,11 @@ for file_name in progressBar(files):
 import pytest
 from coverage.execfile import run_python_file
 
-# This jank allows for us to import files from the src folder
-import sys
-import os
-sys.path.append(os.getcwd() + '/src')
-
 from lib import translate_file
 
 def test_answer():
     translate_file('{file_name}')
     run_python_file(['{file_name.replace('.mpy', '.py')}'])
-    # exec(open('{file_name.replace('.mpy', '.py')}').read())
 ''')
 
 print(

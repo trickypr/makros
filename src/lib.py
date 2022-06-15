@@ -8,7 +8,7 @@ import hashlib
 
 from registration.macro_def import MacroDef
 from tokens import Tokens
-from utils import progressBar
+from utils import get_tokens, progressBar, tokens_to_list
 import macros.macro_import as macro_import
 
 
@@ -60,18 +60,6 @@ class PyMacro:
         with open(file_path + '.json', 'w') as file:
             file.write(json.dumps(macro_hash))
 
-    def get_tokens(
-            self, file_path: str) -> Generator[tokenize.TokenInfo, None, None]:
-        with tokenize.open(file_path) as file:
-            tokens = tokenize.generate_tokens(file.readline)
-            for token in tokens:
-                yield token
-
-    def tokens_to_list(
-        self, tokens: Generator[tokenize.TokenInfo, None, None]
-    ) -> List[tokenize.TokenInfo]:
-        return [token for token in tokens]
-
     def parse_macro(self, tokens: Tokens, token: tokenize.Token,
                     available_macros: List[MacroDef]) -> Tuple[bool, str]:
         for macro in available_macros:
@@ -102,8 +90,8 @@ class PyMacro:
 
     def parse_file(self, file_path: Path) -> None:
         available_macros: List[MacroDef] = []
-        raw_tokens = self.get_tokens(str(file_path))
-        tokens = Tokens(self.tokens_to_list(raw_tokens), str(file_path))
+        raw_tokens = get_tokens(str(file_path))
+        tokens = Tokens(tokens_to_list(raw_tokens), str(file_path))
 
         current_line = 0
         output = ""
