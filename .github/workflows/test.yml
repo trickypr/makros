@@ -23,3 +23,5 @@ jobs:
           curl -Os https://uploader.codecov.io/latest/linux/codecov
           chmod +x codecov
           ./codecov -t ${CODECOV_TOKEN}
+      - name: Upload to codacy
+        run: bash <(curl -Ls https://coverage.codacy.com/get.sh)
