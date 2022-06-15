@@ -1,0 +1,12 @@
+{
+  "name": "Makros Example",
+  "package": "makro_examples",
+  "description": "A set of example macros built using the Makros library framework",
+  "macros": [
+    {
+      "name": "Traditional print",
+      "keyword": "print",
+      "description": "Reimplements traditional python 2 print statements right within python"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+macro import enum
+
+import json
+
+enum ManifestErrors(Exception):
+    MissingName
+    MissingPackageName
+    InvalidPackageName
+    MissingDescription
+    MissingMacros
+
+enum MacroErrors(ManifestErrors):
+    MissingName
+    MissingKeyword
+    MissingDescription
+
+class PackageManifest:
+    def __init__(self, manifest_path: str, package_name: str = 'local'):
+        self.path = manifest_path
+        self.package_name = package_name
+
+        self.contents = self.read_manifest()
+        self.validate_manifest()
+
+    def validate_manifest(self) -> None:
+        if 'name' not in self.contents:
+            raise ManifestErrors.MissingName(f'Package manifest {self.path} is missing a name')
+
+        if 'package' not in self.contents:
+            raise ManifestErrors.MissingPackageName(f'Package manifest {self.path} is missing a package name')
+
+        if self.package_name != 'local' and self.package_name != self.contents['package']:
+            raise ManifestErrors.InvalidPackageName(f'Package manifest {self.path} does not have the same name as the enclosing pip package')
+
+        if 'description' not in self.contents:
+            raise ManifestErrors.MissingDescription(f'Package manifest {self.path} is missing a description')
+
+        if 'macros' not in self.contents:
+            raise ManifestErrors.MissingMacros(f'Package manifest {self.path} is missing macros')
+
+        self.name = self.contents['name']
+        self.description = self.contents['description']
+        self.macros = self.contents['macros']
+
+        for macro_def in self.macros:
+            if 'name' not in macro_def:
+                raise MacroErrors.MissingName(f'Macro in package manifest {self.path} is missing a name')
+
+            if 'keyword' not in macro_def:
+                raise MacroErrors.MissingKeyword(f'Macro in package manifest {self.path} is missing a keyword')
+            
+            if 'description' not in macro_def:
+                raise MacroErrors.MissingDescription(f'Macro in package manifest {self.path} is missing a description')
+
+    def read_manifest(self) -> dict:
+        with open(self.path, 'r') as manifest_file:
+            return json.load(manifest_file)
