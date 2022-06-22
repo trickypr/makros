@@ -13,11 +13,6 @@ from utils import get_tokens, progressBar, tokens_to_list
 import macros.macro_import as macro_import
 
 
-def macro_file(file_name: str) -> str:
-    return Path(__file__).parent.joinpath('macros').joinpath(
-        file_name).__str__()
-
-
 def sha256sum(filename):
     h = hashlib.sha256()
     b = bytearray(128 * 1024)
