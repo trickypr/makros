@@ -1,4 +1,5 @@
 import tokenize
+from typing import List
 from macros.types import MacroParser, MacroTranslator
 from macros.utils import camel_to_snake
 from tokens import TokenCase, Tokens
@@ -59,7 +60,7 @@ class EnumTupleArg(ASTBase):
 
 
 class EnumTupleItem(ASTBase):
-    def __init__(self, name: tokenize.TokenInfo, args: list[EnumTupleArg]):
+    def __init__(self, name: tokenize.TokenInfo, args: List[EnumTupleArg]):
         self.name = name
         self.args = args
 
