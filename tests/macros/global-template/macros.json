@@ -1,0 +1,14 @@
+{
+  "name": "Makros Example",
+  "package": "global",
+  "description": "A set of example macros built using the Makros library framework",
+  "macros": [
+    {
+      "name": "Hello World!",
+      "keyword": "hello",
+      "file": "hello.py",
+      "description": "The smallest hello world possible in python"
+    }
+  ],
+  "bootstrap": ["hello.mpy"]
+}
