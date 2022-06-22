@@ -7,6 +7,7 @@ from typing import List, Tuple
 import hashlib
 
 from registration.macro_def import MacroDef
+from registration.resolver import Resolver
 from tokens import Tokens
 from utils import get_tokens, progressBar, tokens_to_list
 import macros.macro_import as macro_import
@@ -29,7 +30,9 @@ def sha256sum(filename):
 
 class PyMacro:
     def __init__(self):
+        self.resolver = Resolver()
         self.bootstrap()
+        self.resolver.add_lib(self)
 
     def bootstrap_file(self, folder_path, file, macro_hash):
         if not isfile(join(folder_path, file)):
@@ -39,7 +42,7 @@ class PyMacro:
             return
 
         file_hash = sha256sum(join(folder_path, file))
-        if macro_hash.__contains__(
+        if macro_hash is not None and macro_hash.__contains__(
                 folder_path + file) and file_hash == macro_hash[folder_path +
                                                                 file]:
             return
@@ -103,6 +106,8 @@ class PyMacro:
         raw_tokens = get_tokens(str(file_path))
         tokens = Tokens(tokens_to_list(raw_tokens), str(file_path))
 
+        self.resolver.cwd = file_path.parent
+
         current_line = 0
         output = ""
 
@@ -112,14 +117,15 @@ class PyMacro:
                     parser = macro_import.Parser()
 
                     macro_ast = parser.parse(tokens)
-                    # TODO: Better module resolution
+                    macro_string = macro_ast.module.string
+
+                    if macro_ast.macro:
+                        macro_string += "."
+                        macro_string += macro_ast.macro.string
+
                     available_macros.append(
-                        MacroDef(
-                            macro_ast.module.string,
-                            tokenize.TokenInfo(1, macro_ast.module.string,
-                                               (1, 1), (1, 1), ''),
-                            macro_file(macro_ast.module.string + '.py')))
-                    output += f"# Macro imported: {macro_ast.module.string}\n"
+                        self.resolver.resolve(macro_string))
+                    output += f"# Macro imported: {macro_string}\n"
 
                     continue
 
@@ -128,6 +134,9 @@ class PyMacro:
 
                 output += returned
 
+                # Enabled will only be true if parse_macro has found a macro. So
+                # we should only skip the token if it has found a macro,
+                # otherwise, we want other like-based token logic to run
                 if enabled:
                     continue
 

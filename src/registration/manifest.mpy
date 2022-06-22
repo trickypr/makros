@@ -15,9 +15,10 @@ enum MacroErrors(ManifestErrors):
     MissingDescription
 
 class PackageManifest:
-    def __init__(self, manifest_path: str, package_name: str = 'local'):
+    bootstrap = []
+
+    def __init__(self, manifest_path: str):
         self.path = manifest_path
-        self.package_name = package_name
 
         self.contents = self.read_manifest()
         self.validate_manifest()
@@ -29,7 +30,7 @@ class PackageManifest:
         if 'package' not in self.contents:
             raise ManifestErrors.MissingPackageName(f'Package manifest {self.path} is missing a package name')
 
-        if self.package_name != 'local' and self.package_name != self.contents['package']:
+        if 'package' not in self.contents:
             raise ManifestErrors.InvalidPackageName(f'Package manifest {self.path} does not have the same name as the enclosing pip package')
 
         if 'description' not in self.contents:
@@ -39,8 +40,12 @@ class PackageManifest:
             raise ManifestErrors.MissingMacros(f'Package manifest {self.path} is missing macros')
 
         self.name = self.contents['name']
+        self.package_name = self.contents['package']
         self.description = self.contents['description']
         self.macros = self.contents['macros']
+
+        if 'bootstrap' in self.contents:
+            self.bootstrap = self.contents['bootstrap']
 
         for macro_def in self.macros:
             if 'name' not in macro_def:

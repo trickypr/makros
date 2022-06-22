@@ -1,5 +1,6 @@
 import tokenize
 import token
+from typing import Optional
 
 from macros.types import MacroParser
 from tokens import Tokens, TokenCase
@@ -10,17 +11,23 @@ class MacroAST:
 
 
 class Import(MacroAST):
-    def __init__(self, module: tokenize.TokenInfo):
+    def __init__(self, module: tokenize.TokenInfo,
+                 macro: Optional[tokenize.TokenInfo]):
         self.module = module
+        self.macro = macro
 
 
 class Parser(MacroParser):
     def parse(self, tokens: Tokens) -> Import:
-        # tokens.consume(TokenCase().type(token.NAME).string('macro'),
-        #                "Expected keyword 'macro'")
         tokens.consume(TokenCase().type(token.NAME).string("import"),
                        "Expected the keyword 'import'")
 
-        return Import(
-            tokens.consume(TokenCase().type(token.NAME),
-                           "Expected the name of your module"))
+        module = tokens.consume(TokenCase().type(token.NAME),
+                                "Expected the name of your module")
+        macro = None
+
+        if tokens.match(TokenCase().type(token.OP).string('.')):
+            macro = tokens.consume(TokenCase().type(token.NAME),
+                                   "Expected the name of the macro file")
+
+        return Import(module, macro)

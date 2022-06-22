@@ -11,12 +11,7 @@ from utils import progressBar
 
 def get_files(folder_name: str) -> List[str]:
     all_items = [join(folder_name, item) for item in listdir(folder_name)]
-
-    folders = [item for item in all_items if not isfile(item)]
     files = [item for item in all_items if isfile(item)]
-
-    for folder in folders:
-        files.extend(get_files(folder))
 
     return files
 

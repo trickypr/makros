@@ -1,0 +1,3 @@
+macro import local.hello
+
+hello

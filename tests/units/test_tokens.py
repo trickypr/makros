@@ -1,4 +1,4 @@
-\import token
+import token
 import tokenize
 from typing import List
 import pytest

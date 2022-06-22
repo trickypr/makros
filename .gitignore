@@ -12,3 +12,4 @@ coverage.xml
 # as well
 src/macros.json
 src/macros/namespace.py
+src/registration/manifest.py

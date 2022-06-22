@@ -1,0 +1,17 @@
+from macros.types import MacroParser, MacroTranslator
+from tokens import Tokens
+
+macro import enum
+
+enum HelloAST:
+    Hello
+
+class Parser(MacroParser):
+    def parse(self, tokens: Tokens) -> HelloAST:
+        # There is literally nothing we need to do here. That is why it is so
+        # nice
+        return HelloAST.Hello()
+
+class Translator(MacroTranslator):
+    def translate(self, ast: HelloAST) -> str:
+        return 'print("Hello World")'
