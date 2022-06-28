@@ -16,6 +16,12 @@ class ResolutionError(Exception):
 
 
 class Resolver:
+    """Is responsible for resolving errors
+
+    Raises:
+        ResolutionError: Failed to find a module, see error string for info
+    """
+
     discovered = {}
     bootstrapped_folders = []
     cwd = Path('')
@@ -24,9 +30,16 @@ class Resolver:
         self.lib = None
 
     def add_lib(self, lib):
+        """Specifies the connected PyMacro class that will be used to compile 
+        macros that require bootstrapping
+
+        Args:
+            lib (PyMacro): The object that will be used to bootstrap
+        """
+
         self.lib = lib
 
-    def ensure_manifest_file(self):
+    def ensure_manifest_loader(self):
         """The package manifest file is bootstraped after this file is loaded, 
         which may cause a race condition. As a shortcut around it, we will only
         import it when resolving external modules, well after everything has
@@ -40,20 +53,53 @@ class Resolver:
                 'registration.manifest').manifest.PackageManifest
 
     def get_internal_path(self, resolution_string: str) -> Path:
-        py = Path(__file__).parent.parent.joinpath('macros').joinpath(
-            f"{resolution_string}.py")
+        """Gets the path object for the macro if it is one of the ones included
+        with the makros module
 
-        return py
+        Args:
+            resolution_string (str): The string, roughly equivalent to the file name without its extension
+
+        Returns:
+            Path: The path object representing the macro
+        """
+
+        return Path(__file__).parent.parent.joinpath('macros').joinpath(
+            f"{resolution_string}.py")
 
     def load_macro(self, path: Path, macro_name: str,
                    trigger_token: TokenInfo) -> MacroDef:
-        macro = MacroDef(macro_name, trigger_token, path.__str__())
-        return macro
+        """Loads a macro from a given path and returns its MacroDef
+
+        Args:
+            path (Path): The path to the python file that will represent the macro
+            macro_name (str): The name of the macro
+            trigger_token (TokenInfo): The token that is used to trigger the macro
+
+        Returns:
+            MacroDef: The final macro loaded from disk
+        """
+
+        return MacroDef(macro_name, trigger_token, path.__str__())
 
     def load_macro_from_folder(self, path: Path, macro: str,
                                registration_token: TokenInfo) -> MacroDef:
-        self.ensure_manifest_file()
+        """Loads a specific macro from its containing folder
 
+        Args:
+            path (Path): The containing folder
+            macro (str): The name of the macro to be loaded
+            registration_token (TokenInfo): The token that will be used to trigger the macro
+
+        Raises:
+            ResolutionError: If the manifest file doesn't specify a macro with this name
+
+        Returns:
+            MacroDef: The final loaded macro for this folder
+        """
+
+        self.ensure_manifest_loader()
+
+        # Load the package manifest
         manifest_path = path.joinpath('macros.json')
         manifest = PackageManifest(manifest_path)
 
@@ -67,10 +113,13 @@ class Resolver:
 
             self.bootstrapped_folders.append(path)
 
+        # If the macro is not specified within the macro definition file, throw
+        # an error
         if macro not in [macro['keyword'] for macro in manifest.macros]:
             raise ResolutionError(
                 f'The macro at "{path}" does not contain the macro "{macro}"')
 
+        # Collect the information specified in the file for this macro
         macro_index = [macro['keyword']
                        for macro in manifest.macros].index(macro)
         macro_dict = manifest.macros[macro_index]
@@ -79,11 +128,29 @@ class Resolver:
                         path.joinpath(macro_dict['file']).__str__())
 
     def find_folder_recursive(self, resolution_string: str) -> Path:
+        """Finds a folder with a specific name in the current working directory recursively
+
+        Args:
+            resolution_string (str): The string we are looking for
+
+        Returns:
+            Path: The path to this string, if any
+        """
+
         for path in self.cwd.rglob('*'):
             if path.is_dir() and path.name == resolution_string:
                 return path
 
     def find_folder_pip(self, resolution_string: str) -> Path:
+        """Will attempt to find a file within the pip packages folder
+
+        Args:
+            resolution_string (str): The string that is being searched for
+
+        Returns:
+            Path: The path to the string within the pip packages folder
+        """
+
         dirs = [
             d for d in listdir(SITE_PACKAGES)
             if isdir(path.join(SITE_PACKAGES, d))
@@ -94,6 +161,18 @@ class Resolver:
                 return Path(dir)
 
     def resolve(self, resolution_string: str) -> MacroDef:
+        """Call this function to resolve an import string, for example 'enum' or 'lib/something'
+
+        Args:
+            resolution_string (str): The string to be resolved
+
+        Raises:
+            ResolutionError: Could not resolve your specific string
+
+        Returns:
+            MacroDef: The resolved macro
+        """
+
         # If we have already discovered something, don't waste time on logic.
         if resolution_string in self.discovered:
             return self.discovered[resolution_string]

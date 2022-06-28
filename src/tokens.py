@@ -4,18 +4,47 @@ from typing import List
 
 
 class TokenCase:
+    """Used to check if a token matches specific details
+    """
+
     token_type: int = None
     token_string: str = None
 
     def type(self, new_type: int):
+        """Specifies the token type to check against
+
+        Args:
+            new_type (int): The token type to check against
+
+        Returns:
+            TokenCase: This TokenCase instance, used for checking
+        """
         self.token_type = new_type
         return self
 
     def string(self, new_str: str):
+        """Specifies a string to be checked against to see if it matches
+
+        Args:
+            new_str (str): The string to check against
+
+        Returns:
+            TokenCase: This TokenCase instance, used for chaining
+        """
+
         self.token_string = new_str
         return self
 
     def check(self, token: tokenize.TokenInfo) -> bool:
+        """Checks a specific token against the information provided here
+
+        Args:
+            token (tokenize.TokenInfo): The token to check against
+
+        Returns:
+            bool: If it matches or not
+        """
+
         if self.token_type is not None and self.token_type != token.type:
             return False
 
@@ -26,21 +55,16 @@ class TokenCase:
 
 
 class Tokens:
+    """A helper token for working with macros"""
 
     current_token: tokenize.TokenInfo = None
     current_token_index: int = 0
 
-    filter_new_lines = False
-    filter_logical_lines = True
-    """
-    Filters logical line tokens. For more information about this type of token,
-    see: https://docs.python.org/3/library/token.html#token.NL
-    """
-    filter_comments = True
-
     def __init__(self, tokens: List[tokenize.TokenInfo], filename: str):
-        # self.internal_token = tokens
         self.filename = filename
+
+        # Filter logical newlines and comments, as they are not handled well by
+        # the macros that are implemented and provide no good value
         self.internal_token = list(
             filter(lambda x: x.type != token.NL and x.type != token.COMMENT,
                    tokens))
