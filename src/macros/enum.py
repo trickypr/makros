@@ -1,5 +1,5 @@
 import tokenize
-from typing import List
+from typing import List, Optional
 from macros.types import MacroParser, MacroTranslator
 from macros.utils import camel_to_snake
 from tokens import TokenCase, Tokens
@@ -7,18 +7,18 @@ from tokens import TokenCase, Tokens
 import macros.pyx as pyx
 
 
-class ASTBase():
-    def __assign_enum_types__(enum: any, enum_body: any):
+class ASTBase:
+    def __assign_enum_types__(enum: any, enum_body: any):  # type: ignore
         ASTBase.Enum = enum
         ASTBase.EnumBody = enum_body
 
-    def visit(self, visitor: any) -> str:
+    def visit(self, visitor: any) -> List[tokenize.TokenInfo]:  # type: ignore
         return visitor.__getattribute__(camel_to_snake(
             self.__class__.__name__))(self)
 
 
 class Enum(ASTBase):
-    def __init__(self, name: tokenize.TokenInfo, extends: str or None,
+    def __init__(self, name: tokenize.TokenInfo, extends: Optional[str],
                  body: ASTBase):
         self.name = name
         self.extends = extends
@@ -162,7 +162,7 @@ class Parser(MacroParser):
         extends = '' if do_while else None
 
         while do_while:
-            extends += tokens.advance().string
+            extends += tokens.advance().string  # type: ignore
             do_while = not tokens.match(TokenCase().type(
                 tokenize.OP).string(")"))
 
@@ -181,56 +181,61 @@ class Translator(MacroTranslator):
         assign_function = pyx.create_func(
             '__assign_enum_types__', self.parent_name + ', ' + ', '.join([
                 camel_to_snake(arg.name.string) for arg in ast.body.identifiers
-            ]), '\n'.join([
-                f"{self.parent_name}.{arg.name.string} = {camel_to_snake(arg.name.string )}"
-                for arg in ast.body.identifiers
-            ]))
+            ]), [
+                pyx.string_as_token(
+                    f"{self.parent_name}.{arg.name.string} = {camel_to_snake(arg.name.string )}")
+                for arg in ast.body.identifiers  # type: ignore
+            ])
 
         equal_override = pyx.create_func('__eq__', 'self, other',
-                                         "return isinstance(self, other)")
+                                         [pyx.string_as_token("return isinstance(self, other)")])
 
         return pyx.program(
-            pyx.create_class(ast.name.string,
-                             pyx.program(assign_function, equal_override),
-                             extends=ast.extends),
-            pyx.program(
-                ast.body.visit(self),
-                f"{self.parent_name}.__assign_enum_types__({self.parent_name}, {', '.join(arg.name.string for arg in ast.body.identifiers)})\n\n\n",
-                *[f'del({arg.name.string})'
-                  for arg in ast.body.identifiers], '\n'))
+            *pyx.create_class(ast.name.string,
+                              pyx.program(*assign_function, *equal_override),
+                              extends=ast.extends),
+            *pyx.program(
+                *ast.body.visit(self),
+                pyx.string_as_token(
+                    # type: ignore
+                    f"{self.parent_name}.__assign_enum_types__({self.parent_name}, {', '.join(arg.name.string for arg in ast.body.identifiers)})\n\n\n"),
+                *[pyx.string_as_token(f'del({arg.name.string})')
+                  for arg in ast.body.identifiers]),  # type: ignore
+            tokenize.TokenInfo(tokenize.NEWLINE, '\n', (0, 0), (0, 0), ''))
 
-    def enum_body(self, ast: EnumBody) -> str:
-        return pyx.program("\n".join(
-            [item.visit(self) for item in ast.identifiers]))
+    def enum_body(self, ast: EnumBody) -> List[tokenize.TokenInfo]:
+        return pyx.program(*[item.visit(self) for item in ast.identifiers])
 
-    def enum_basic_item(self, ast: EnumBasicItem) -> str:
+    def enum_basic_item(self, ast: EnumBasicItem) -> List[tokenize.TokenInfo]:
         return pyx.create_class(ast.name.string,
                                 pyx.create_func('__str__', 'self',
-                                                f"return '{ast.name.string}'"),
+                                                [pyx.string_as_token(f"return '{ast.name.string}'")]),
                                 extends=self.parent_name)
 
-    def enum_tuple_arg(self, ast: EnumTupleArg) -> str:
-        return f"{ast.name.string}{f': {ast.item_type}' if ast.item_type else ''}"
+    def enum_tuple_arg(self, ast: EnumTupleArg) -> List[tokenize.TokenInfo]:
+        return [pyx.string_as_token(f"{ast.name.string}{f': {ast.item_type}' if ast.item_type else ''}")]
 
-    def enum_tuple_item(self, ast: EnumTupleItem) -> str:
+    def enum_tuple_item(self, ast: EnumTupleItem) -> List[tokenize.TokenInfo]:
         return pyx.create_class(
             ast.name.string,
             pyx.program(
-                pyx.create_func(
+                *pyx.create_func(
                     '__init__',
-                    'self, ' + ', '.join([arg.visit(self)
+                    'self, ' + ', '.join([pyx.tokens_as_string(arg.visit(self))
                                           for arg in ast.args]),
-                    '\n'.join([
-                        f"self.{arg.name.string} = {arg.name.string}"
+                    [
+                        pyx.string_as_token(
+                            f"self.{arg.name.string} = {arg.name.string}")
                         for arg in ast.args
-                    ])),
+                    ]),
 
                 # Responsible for handling converting the output to a string
-                pyx.create_func(
+                *pyx.create_func(
                     '__str__', 'self',
-                    f"return f'{ast.name.string}({', '.join([arg.name.string + ': {self.' + arg.name.string + '}' for arg in ast.args])})'"
+                    [pyx.string_as_token(
+                        f"return f'{ast.name.string}({', '.join([arg.name.string + ': {self.' + arg.name.string + '}' for arg in ast.args])})'")]
                 )),
             extends=self.parent_name)
 
-    def translate(self, ast: Enum) -> str:
+    def translate(self, ast: Enum) -> List[tokenize.TokenInfo]:
         return ast.visit(self)

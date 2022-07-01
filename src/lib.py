@@ -2,6 +2,7 @@ import json
 from os.path import isfile, join
 from os import listdir
 from pathlib import Path
+from pprint import pprint
 import tokenize
 from typing import List, Tuple
 import hashlib
@@ -9,7 +10,7 @@ import hashlib
 from registration.macro_def import MacroDef
 from registration.resolver import Resolver
 from tokens import Tokens
-from utils import get_tokens, progressBar, tokens_to_list
+from utils import get_tokens, progressBar, to_tokenize_iterable, tokens_to_list
 import macros.macro_import as macro_import
 
 BOOTSTRAP_FOLDERS = ['macros', 'registration']
@@ -32,6 +33,7 @@ class PyMacro:
      tasks (e.g. Bootstraping) will be run multiple times and may cause a race 
      condition
     """
+
     def __init__(self):
         self.resolver = Resolver()
         self.bootstrap()
@@ -101,8 +103,8 @@ class PyMacro:
         with open(HASH_FILE, 'w') as file:
             file.write(json.dumps(macro_hash))
 
-    def parse_macro(self, tokens: Tokens, token: tokenize.Token,
-                    available_macros: List[MacroDef]) -> Tuple[bool, str]:
+    def parse_macro(self, tokens: Tokens, token: tokenize.TokenInfo,
+                    available_macros: List[MacroDef]) -> Tuple[bool, List[tokenize.TokenInfo]]:
         """This function is called on every name token to see if it matches one
         of the custom imported macros.
 
@@ -137,9 +139,9 @@ class PyMacro:
 
                 # Don't trust the developer (probably me) to provide leading and
                 # trailing new lines
-                return [True, "\n" + translator.translate(macro_ast) + "\n"]
+                return (True, translator.translate(macro_ast))
 
-        return [False, ""]
+        return (False, [])
 
     def parse_file(self, file_path: Path) -> None:
         """Will parse a file and write it to the same folder on the disk
@@ -161,7 +163,7 @@ class PyMacro:
         self.resolver.cwd = file_path.parent
 
         current_line = 0
-        output = ""
+        output = []
 
         for token in tokens:
             # If the token is of type name, we need to check if the token will
@@ -198,6 +200,9 @@ class PyMacro:
                 if enabled:
                     continue
 
+            # Copy this token to the output as a pass though
+            output.append(token)
+
             # We want to only keep one of each line, and only lines without
             # a macro on them. This is my current solution, but if you have
             # a better one, feel free to create a PR
@@ -206,15 +211,15 @@ class PyMacro:
             # python tokeniser and just get the macros to return a list of tokens
             # rather than a string? That might reduce the number of bugs with
             # string handling and simplify this kind of code.
-            if token.start[
-                    0] > current_line and token.type != tokenize.DEDENT and token.type != tokenize.NEWLINE:
-                output += token.line
-                current_line = token.start[0]
+            # if token.start[
+            #         0] > current_line and token.type != tokenize.DEDENT and token.type != tokenize.NEWLINE:
+            #     output += token.line
+            #     current_line = token.start[0]
 
         # Write the macro to the disk
         out_path = str(file_path).replace('.mpy', '.py')
         with open(out_path, 'w') as file:
-            file.write(output)
+            file.write(tokenize.untokenize(to_tokenize_iterable(output)))
 
 
 def get_files(folder_name: str) -> List[str]:
@@ -230,14 +235,14 @@ def get_files(folder_name: str) -> List[str]:
 
 
 def translate_file(
-    file_name: str, macro_instance: PyMacro = PyMacro()) -> PyMacro:
+        file_name: str, macro_instance: PyMacro = PyMacro()) -> PyMacro:
     macro_instance.parse_file(Path(file_name))
 
     return macro_instance
 
 
 def translate_folder(
-    folder_name: str, macro_instance: PyMacro = PyMacro()) -> PyMacro:
+        folder_name: str, macro_instance: PyMacro = PyMacro()) -> PyMacro:
     files = [
         Path(file) for file in get_files(folder_name) if file.endswith('.mpy')
     ]

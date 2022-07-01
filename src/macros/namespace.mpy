@@ -1,18 +1,18 @@
+from tokens import TokenCase, Tokens
+from macros.utils import camel_to_snake
+from macros.types import MacroParser, MacroTranslator
+from macros.pyx import create_class, create_func, program, string_as_token
+from typing import List
+import tokenize
+from argparse import Namespace
 macro import enum
 
-from argparse import Namespace
-import tokenize
-from typing import List
-from macros.pyx import create_class, create_func, program
-
-from macros.types import MacroParser, MacroTranslator
-from macros.utils import camel_to_snake
-from tokens import TokenCase, Tokens
 
 class Visit():
-    def visit(self, visitor: any) -> str:
+    def visit(self, visitor: any) -> List[tokenize.TokenInfo]:
         return visitor.__getattribute__(camel_to_snake(
             self.__class__.__name__))(self)
+
 
 enum NamespaceAST(Visit):
     Statement(identifier: tokenize.TokenInfo)
@@ -34,10 +34,11 @@ class Parser(MacroParser):
             if current_line != tokens.previous().start[0]:
                 current_line = tokens.previous().start[0]
                 lines.append(tokens.previous().line)
-            
+
             if tokens.match(TokenCase().type(tokenize.NAME).string('export')):
                 tokens.advance()
-                identifier = tokens.consume(TokenCase().type(tokenize.NAME), "Expected identifier")
+                identifier = tokens.consume(TokenCase().type(
+                    tokenize.NAME), "Expected identifier")
                 statements.append(NamespaceAST.Statement(identifier))
 
                 # Remove export from the last line
@@ -45,7 +46,6 @@ class Parser(MacroParser):
                 tab = last_line.split('export')[0]
                 lines.append(tab + last_line.replace('export', '', 1).strip())
 
-            
             if tokens.match(TokenCase().type(tokenize.INDENT)):
                 indent += 1
             elif tokens.match(TokenCase().type(tokenize.DEDENT)):
@@ -66,41 +66,47 @@ class Parser(MacroParser):
         return NamespaceAST.Body('\n'.join([line.replace(tab, '', 1) for line in lines]), statements)
 
     def parse(self, tokens: Tokens) -> any:
-        identifier = tokens.consume(TokenCase().type(tokenize.NAME), 'Expected namespace identifier')
-        
-        tokens.consume(TokenCase().type(tokenize.OP).string(':'), "Expected ':'")
+        identifier = tokens.consume(TokenCase().type(
+            tokenize.NAME), 'Expected namespace identifier')
+
+        tokens.consume(TokenCase().type(
+            tokenize.OP).string(':'), "Expected ':'")
         tokens.consume(TokenCase().type(tokenize.NEWLINE), "Expected newline")
         tokens.consume(TokenCase().type(tokenize.INDENT), "Expected indent")
 
         return NamespaceAST.Namespace(identifier, self.body(tokens))
 
+
 class Translator(MacroTranslator):
-    def statement(self, ast: NamespaceAST.Body) -> str:
-        return f'{ast.identifier.string}: {ast.identifier.string}'
+    def statement(self, ast: NamespaceAST.Body) -> List[tokenize.TokenInfo]:
+        return [string_as_token(f'{ast.identifier.string}: {ast.identifier.string}')]
 
     def body(self, ast: NamespaceAST.Body):
-        return_def = 'return { ' + ", ".join([export.visit(self) for export in ast.stmts]) + ' }'
+        return_def = 'return { ' + \
+            ", ".join([export.visit(self) for export in ast.stmts]) + ' }'
 
         return program(
             *ast.contents.split('\n'),
-            return_def)
+            string_as_token(return_def))
 
-    def namespace(self, ast: NamespaceAST.Namespace) -> str:
+    def namespace(self, ast: NamespaceAST.Namespace) -> List[tokenize.TokenInfo]:
         namespace_def_function = f'__{ast.identifier.string}_namespace_creator'
 
-        namespace_exports = [f'self.{export.identifier.string} = {export.identifier.string}' for export in ast.body.stmts]
-        namespace_class = create_class(namespace_def_function, create_func('__init__', 'self', program(ast.body.contents, *namespace_exports)))
-
+        namespace_exports = [
+            f'self.{export.identifier.string} = {export.identifier.string}' for export in ast.body.stmts]
+        namespace_class = create_class(namespace_def_function, create_func('__init__', 'self', program(
+            string_as_token(ast.body.contents), *map(lambda x: string_as_token(x), namespace_exports))))
 
         return program(
-            f'# Start of namespace {ast.identifier.string}',
-            namespace_class,
-            
-            f'{ast.identifier.string} = {namespace_def_function}()', 
-            f'del {namespace_def_function}', 
-            '',
-            '',
-            f'# End of namespace {ast.identifier.string}')
+            string_as_token(f'# Start of namespace {ast.identifier.string}'),
+            *namespace_class,
 
-    def translate(self, ast: NamespaceAST.Namespace) -> str:
+            string_as_token(
+                f'{ast.identifier.string} = {namespace_def_function}()'),
+            string_as_token(f'del {namespace_def_function}'),
+            string_as_token(''),
+            string_as_token(''),
+            string_as_token(f'# End of namespace {ast.identifier.string}'))
+
+    def translate(self, ast: NamespaceAST.Namespace) -> List[tokenize.TokenInfo]:
         return ast.visit(self)

@@ -1,14 +1,14 @@
 import token
 import tokenize
-from typing import List
+from typing import List, Optional
 
 
 class TokenCase:
     """Used to check if a token matches specific details
     """
 
-    token_type: int = None
-    token_string: str = None
+    token_type: Optional[int] = None
+    token_string: Optional[str] = None
 
     def type(self, new_type: int):
         """Specifies the token type to check against
@@ -57,7 +57,7 @@ class TokenCase:
 class Tokens:
     """A helper token for working with macros"""
 
-    current_token: tokenize.TokenInfo = None
+    current_token: Optional[tokenize.TokenInfo] = None
     current_token_index: int = 0
 
     def __init__(self, tokens: List[tokenize.TokenInfo], filename: str):
@@ -78,9 +78,9 @@ class Tokens:
         print(f"\t | {token_something_else.line}")
         # NOTE: This will not correctly handle multiline tokens
         print(
-            f"\t  {' ' * token_something_else.start[2]} {'¯' * token_something_else.end[2] - token_something_else.start[2]}"
+            f"\t  {' ' * token_something_else.start[1]} {'¯' * (token_something_else.end[1] - token_something_else.start[0])}"
         )
-        print(f"\t  {' ' * token_something_else.start[2]} Error found here")
+        print(f"\t  {' ' * token_something_else.start[1]} Error found here")
         print()
         print("Full traceback:")
 

@@ -1,9 +1,25 @@
 import tokenize
-from typing import Generator, List, TypeVar
+from typing import Generator, List, Tuple, TypeVar
 
 
-def getFileHash(path: str):
-    pass
+def to_tokenize_iterable(tokens: List[tokenize.TokenInfo]) -> Generator[Tuple[int, str, Tuple[int, int], Tuple[int, int], str], None, None]:
+    last_end = (0, 0)
+
+    for token in tokens:
+        if isinstance(token, str):
+            continue
+
+        tok_type, string, start, end, line = (
+            token.type, token.string, token.start, token.end, token.line)
+
+        if start[0] <= last_end[0] and start[1] < last_end[1]:
+            start = last_end
+            end = start
+            end = (end[0], end[1] + 1)
+
+        last_end = end
+
+        yield (tok_type, string, start, end, line)
 
 
 def progressBar(iterable,
