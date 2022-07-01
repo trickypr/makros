@@ -32,6 +32,7 @@ class PyMacro:
      tasks (e.g. Bootstraping) will be run multiple times and may cause a race 
      condition
     """
+
     def __init__(self):
         self.resolver = Resolver()
         self.bootstrap()
@@ -101,7 +102,7 @@ class PyMacro:
         with open(HASH_FILE, 'w') as file:
             file.write(json.dumps(macro_hash))
 
-    def parse_macro(self, tokens: Tokens, token: tokenize.Token,
+    def parse_macro(self, tokens: Tokens, token: tokenize.TokenInfo,
                     available_macros: List[MacroDef]) -> Tuple[bool, str]:
         """This function is called on every name token to see if it matches one
         of the custom imported macros.
@@ -137,9 +138,9 @@ class PyMacro:
 
                 # Don't trust the developer (probably me) to provide leading and
                 # trailing new lines
-                return [True, "\n" + translator.translate(macro_ast) + "\n"]
+                return (True, "\n" + translator.translate(macro_ast) + "\n")
 
-        return [False, ""]
+        return (False, "")
 
     def parse_file(self, file_path: Path) -> None:
         """Will parse a file and write it to the same folder on the disk
@@ -230,14 +231,14 @@ def get_files(folder_name: str) -> List[str]:
 
 
 def translate_file(
-    file_name: str, macro_instance: PyMacro = PyMacro()) -> PyMacro:
+        file_name: str, macro_instance: PyMacro = PyMacro()) -> PyMacro:
     macro_instance.parse_file(Path(file_name))
 
     return macro_instance
 
 
 def translate_folder(
-    folder_name: str, macro_instance: PyMacro = PyMacro()) -> PyMacro:
+        folder_name: str, macro_instance: PyMacro = PyMacro()) -> PyMacro:
     files = [
         Path(file) for file in get_files(folder_name) if file.endswith('.mpy')
     ]

@@ -4,6 +4,7 @@ import sysconfig
 from pathlib import Path
 import token
 from tokenize import TokenInfo
+from typing import Optional
 from registration.macro_def import MacroDef
 
 SITE_PACKAGES = sysconfig.get_path('purelib')
@@ -127,7 +128,7 @@ class Resolver:
         return MacroDef(macro, registration_token,
                         path.joinpath(macro_dict['file']).__str__())
 
-    def find_folder_recursive(self, resolution_string: str) -> Path:
+    def find_folder_recursive(self, resolution_string: str) -> Optional[Path]:
         """Finds a folder with a specific name in the current working directory recursively
 
         Args:
@@ -141,7 +142,7 @@ class Resolver:
             if path.is_dir() and path.name == resolution_string:
                 return path
 
-    def find_folder_pip(self, resolution_string: str) -> Path:
+    def find_folder_pip(self, resolution_string: str) -> Optional[Path]:
         """Will attempt to find a file within the pip packages folder
 
         Args:
@@ -196,7 +197,7 @@ class Resolver:
         package_name = resolution_string.split('.')[0]
         token_name = resolution_string.split('.')[1]
         registration_token = TokenInfo(token.NAME, token_name, (0, 0), (0, 0),
-                                       0)
+                                       '')
 
         local_folder = self.find_folder_recursive(package_name)
         if local_folder is not None:
@@ -205,7 +206,8 @@ class Resolver:
 
         pip_folder = self.find_folder_pip(package_name)
         if pip_folder is not None:
-            macro = self.load_macro_from_folder(local_folder)
+            macro = self.load_macro_from_folder(pip_folder, token_name,
+                                                registration_token)
             self.discovered[resolution_string] = macro
             return macro
 

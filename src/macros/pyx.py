@@ -1,3 +1,6 @@
+from typing import Optional
+
+
 def program(*args) -> str:
     return '\n'.join(args)
 
@@ -8,7 +11,7 @@ def create_func(name: str, args: str, body: str) -> str:
 '''
 
 
-def create_class(name: str, body: str, extends: str = None) -> str:
+def create_class(name: str, body: str, extends: Optional[str] = None) -> str:
     return f'''
 class {name}{f"({extends})" if extends else ""}:
 {indent(body)}

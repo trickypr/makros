@@ -1,5 +1,5 @@
 import tokenize
-from typing import List
+from typing import List, Optional
 from macros.types import MacroParser, MacroTranslator
 from macros.utils import camel_to_snake
 from tokens import TokenCase, Tokens
@@ -8,17 +8,17 @@ import macros.pyx as pyx
 
 
 class ASTBase():
-    def __assign_enum_types__(enum: any, enum_body: any):
+    def __assign_enum_types__(enum: any, enum_body: any):  # type: ignore
         ASTBase.Enum = enum
         ASTBase.EnumBody = enum_body
 
-    def visit(self, visitor: any) -> str:
+    def visit(self, visitor: any) -> str:  # type: ignore
         return visitor.__getattribute__(camel_to_snake(
             self.__class__.__name__))(self)
 
 
 class Enum(ASTBase):
-    def __init__(self, name: tokenize.TokenInfo, extends: str or None,
+    def __init__(self, name: tokenize.TokenInfo, extends: Optional[str],
                  body: ASTBase):
         self.name = name
         self.extends = extends
@@ -162,7 +162,7 @@ class Parser(MacroParser):
         extends = '' if do_while else None
 
         while do_while:
-            extends += tokens.advance().string
+            extends += tokens.advance().string  # type: ignore
             do_while = not tokens.match(TokenCase().type(
                 tokenize.OP).string(")"))
 
@@ -183,7 +183,7 @@ class Translator(MacroTranslator):
                 camel_to_snake(arg.name.string) for arg in ast.body.identifiers
             ]), '\n'.join([
                 f"{self.parent_name}.{arg.name.string} = {camel_to_snake(arg.name.string )}"
-                for arg in ast.body.identifiers
+                for arg in ast.body.identifiers  # type: ignore
             ]))
 
         equal_override = pyx.create_func('__eq__', 'self, other',
@@ -195,9 +195,10 @@ class Translator(MacroTranslator):
                              extends=ast.extends),
             pyx.program(
                 ast.body.visit(self),
+                # type: ignore
                 f"{self.parent_name}.__assign_enum_types__({self.parent_name}, {', '.join(arg.name.string for arg in ast.body.identifiers)})\n\n\n",
                 *[f'del({arg.name.string})'
-                  for arg in ast.body.identifiers], '\n'))
+                  for arg in ast.body.identifiers], '\n'))  # type: ignore
 
     def enum_body(self, ast: EnumBody) -> str:
         return pyx.program("\n".join(
