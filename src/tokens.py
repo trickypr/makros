@@ -70,10 +70,21 @@ class Tokens:
                    tokens))
 
     def error(self, token_something_else: tokenize.TokenInfo, message: str):
-        # TODO: Better error handling
-        raise Exception(
-            f"At line {token_something_else.start[1]} ({token.tok_name[token_something_else.type]}['{token_something_else.string}']) in {self.filename}, {message}\n\t|{token_something_else.line}"
+        from rich import print
+
+        print(
+            f"[bold red]Error at line {token_something_else.start[1]}:[/bold red] {message}"
         )
+        print(f"\t | {token_something_else.line}")
+        # NOTE: This will not correctly handle multiline tokens
+        print(
+            f"\t  {' ' * token_something_else.start[2]} {'¯' * token_something_else.end[2] - token_something_else.start[2]}"
+        )
+        print(f"\t  {' ' * token_something_else.start[2]} Error found here")
+        print()
+        print("Full traceback:")
+
+        raise Exception()
 
     def peek(self) -> tokenize.TokenInfo:
         """
