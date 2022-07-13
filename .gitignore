@@ -1,7 +1,7 @@
 __pycache__
 
 # Test ignores
-tests/macros/*.py
+tests/macros/**/*.py
 .coverage
 coverage.json
 coverage.xml
