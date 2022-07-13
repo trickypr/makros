@@ -3,8 +3,8 @@ import tokenize
 from typing import List
 import pytest
 
-from tokens import TokenCase, Tokens
-from utils import get_tokens, tokens_to_list
+from makros.tokens import TokenCase, Tokens
+from makros.utils import get_tokens, tokens_to_list
 
 
 class TestTokenCase:

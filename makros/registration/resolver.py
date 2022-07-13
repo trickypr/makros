@@ -5,7 +5,8 @@ from pathlib import Path
 import token
 from tokenize import TokenInfo
 from typing import Optional
-from registration.macro_def import MacroDef
+
+from makros.registration.macro_def import MacroDef
 
 SITE_PACKAGES = sysconfig.get_path('purelib')
 
@@ -51,7 +52,7 @@ class Resolver:
 
         if PackageManifest is None:
             PackageManifest = __import__(
-                'registration.manifest').manifest.PackageManifest
+                'makros.registration.manifest').registration.manifest.PackageManifest
 
     def get_internal_path(self, resolution_string: str) -> Path:
         """Gets the path object for the macro if it is one of the ones included

@@ -1,7 +1,7 @@
 from tokens import TokenCase, Tokens
-from macros.utils import camel_to_snake
-from macros.types import MacroParser, MacroTranslator
-from macros.pyx import create_class, create_func, program
+from makros.macros.types import MacroParser, MacroTranslator
+from makros.tokens import TokenCase, Tokens
+from makros.macros.pyx import create_class, create_func, program
 from typing import List
 import tokenize
 from argparse import Namespace

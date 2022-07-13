@@ -6,11 +6,11 @@ import tokenize
 from typing import List, Tuple
 import hashlib
 
-from registration.macro_def import MacroDef
-from registration.resolver import Resolver
-from tokens import Tokens
-from utils import get_tokens, progressBar, tokens_to_list
-import macros.macro_import as macro_import
+from makros.registration.macro_def import MacroDef
+from makros.registration.resolver import Resolver
+from makros.tokens import Tokens
+from makros.utils import get_tokens, progressBar, tokens_to_list
+import makros.macros.macro_import as macro_import
 
 BOOTSTRAP_FOLDERS = ['macros', 'registration']
 HASH_FILE = Path(__file__).parent.joinpath('macros').__str__() + '.json'

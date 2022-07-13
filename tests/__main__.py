@@ -2,11 +2,8 @@ import subprocess
 from typing import List
 from os import listdir
 from os.path import join, isfile
-import sys
 import os
-
-sys.path.append(os.getcwd() + '/makros')
-from utils import progressBar
+from makros.utils import progressBar
 
 
 def get_files(folder_name: str) -> List[str]:
@@ -36,14 +33,8 @@ for file_name in progressBar(files):
         file.write(f'''
 import pytest
 from coverage.execfile import run_python_file
-
-import sys
 import os
-
-old_cwd = os.getcwd()
-sys.path.append(os.getcwd() + '/makros')
-from lib import translate_file
-sys.path.append(old_cwd)
+from makros.lib import translate_file
 
 def test_answer():
     translate_file('{file_name}')

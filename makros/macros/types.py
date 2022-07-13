@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from tokens import Tokens
+from makros.tokens import Tokens
 
 
 class MacroParser(ABC):

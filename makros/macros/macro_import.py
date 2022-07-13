@@ -2,8 +2,8 @@ import tokenize
 import token
 from typing import Optional
 
-from macros.types import MacroParser
-from tokens import Tokens, TokenCase
+from makros.macros.types import MacroParser
+from makros.tokens import TokenCase, Tokens
 
 
 class MacroAST:
