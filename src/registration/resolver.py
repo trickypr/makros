@@ -109,7 +109,7 @@ class Resolver:
         if path not in self.bootstrapped_folders:
             for to_bootstrap in manifest.bootstrap:
                 self.lib.bootstrap_file(path.__str__(),
-                                        path.joinpath(to_bootstrap).__str__(),
+                                        to_bootstrap,
                                         None)
 
             self.bootstrapped_folders.append(path)
