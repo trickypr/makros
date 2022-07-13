@@ -3,13 +3,13 @@ from os.path import isfile, join
 from os import listdir
 from pathlib import Path
 import tokenize
-from typing import List, Tuple
+from typing import Generator, List, Tuple
 import hashlib
 
 from makros.registration.macro_def import MacroDef
 from makros.registration.resolver import Resolver
 from makros.tokens import Tokens
-from makros.utils import get_tokens, progressBar, tokens_to_list
+from makros.utils import get_tokens_from_file, get_tokens_from_string, progressBar, tokens_to_list
 import makros.macros.macro_import as macro_import
 
 BOOTSTRAP_FOLDERS = ['macros', 'registration']
@@ -142,19 +142,10 @@ class PyMacro:
 
         return (False, "")
 
-    def parse_file(self, file_path: Path) -> None:
-        """Will parse a file and write it to the same folder on the disk
-
-        Args:
-            file_path (Path): The path to the file you want to parse
-        """
-
+    def parse_tokens(self, raw_tokens: Generator[tokenize.TokenInfo, None, None], file_path: Path) -> str:
         # Used to keep track of the macros referenced by the current file
         available_macros: List[MacroDef] = []
 
-        # Take advantage of pythons tokenizer to tokenise the file and build a
-        # helper object around it
-        raw_tokens = get_tokens(str(file_path))
         tokens = Tokens(tokens_to_list(raw_tokens), str(file_path))
 
         # Give the resolver the current working directory, it will need this to
@@ -211,6 +202,29 @@ class PyMacro:
                     0] > current_line and token.type != tokenize.DEDENT and token.type != tokenize.NEWLINE:
                 output += token.line
                 current_line = token.start[0]
+
+        # Write the macro to the disk
+        return output
+
+    def parse_string(self, string: str, file_path: Path = Path.cwd()) -> str:
+
+        # Take advantage of pythons tokenizer to tokenise the file and build a
+        # helper object around it
+        raw_tokens = get_tokens_from_string(string)
+        return self.parse_tokens(raw_tokens, file_path)
+
+    def parse_file(self, file_path: Path) -> None:
+        """Will parse a file and write it to the same folder on the disk
+
+        Args:
+            file_path (Path): The path to the file you want to parse
+        """
+
+        # Take advantage of pythons tokenizer to tokenise the file and build a
+        # helper object around it
+        raw_tokens = get_tokens_from_file(str(file_path))
+
+        output = self.parse_tokens(raw_tokens, file_path)
 
         # Write the macro to the disk
         out_path = str(file_path).replace('.mpy', '.py')
