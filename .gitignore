@@ -13,3 +13,6 @@ coverage.xml
 src/macros.json
 src/macros/namespace.py
 src/registration/manifest.py
+
+# Docs
+docs/_build
