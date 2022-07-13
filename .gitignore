@@ -6,6 +6,7 @@ tests/macros/**/*.py
 coverage.json
 coverage.xml
 .pytest_cache
+*.egg-info
 
 # Do not include macros that require boostraps
 # macros.json is used for tracking the boostraped macros, so it can be ignored

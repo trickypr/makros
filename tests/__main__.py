@@ -1,3 +1,4 @@
+import subprocess
 from typing import List
 from os import listdir
 from os.path import join, isfile
@@ -5,7 +6,6 @@ import sys
 import os
 
 sys.path.append(os.getcwd() + '/src')
-
 from utils import progressBar
 
 
@@ -49,6 +49,14 @@ def test_answer():
     translate_file('{file_name}')
     run_python_file(['{file_name.replace('.mpy', '.py')}'])
 ''')
+
+print("Installing global modules")
+print("====================")
+
+subprocess.run('''cd tests/macros/global
+pip install -e .''',
+               shell=True, check=True,
+               executable='/bin/sh')
 
 print(
     'Running pytest, if you get any errors make sure you are in a poetry shell'
