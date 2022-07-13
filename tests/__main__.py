@@ -5,7 +5,7 @@ from os.path import join, isfile
 import sys
 import os
 
-sys.path.append(os.getcwd() + '/src')
+sys.path.append(os.getcwd() + '/makros')
 from utils import progressBar
 
 
@@ -41,7 +41,7 @@ import sys
 import os
 
 old_cwd = os.getcwd()
-sys.path.append(os.getcwd() + '/src')
+sys.path.append(os.getcwd() + '/makros')
 from lib import translate_file
 sys.path.append(old_cwd)
 
