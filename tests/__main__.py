@@ -26,18 +26,17 @@ for file_name in progressBar(files):
                                   '.py').replace('./tests/macros/',
                                                  './tests/macros/test_')
 
-    if os.path.exists(test_host):
-        continue
-
     with open(test_host, 'w') as file:
         file.write(f'''
 import pytest
 from coverage.execfile import run_python_file
 import os
-from makros.lib import translate_file
+from pathlib import Path
+
+from makros.functions import translate_file
 
 def test_answer():
-    translate_file('{file_name}')
+    translate_file(Path('{file_name}'))
     run_python_file(['{file_name.replace('.mpy', '.py')}'])
 ''')
 
@@ -46,7 +45,8 @@ print("====================")
 
 subprocess.run('''cd tests/macros/global
 pip install -e .''',
-               shell=True, check=True,
+               shell=True,
+               check=True,
                executable='/bin/sh')
 
 print(
@@ -57,4 +57,5 @@ print()
 
 print(os.getcwd())
 
-os.system(f'pytest --cov={os.getcwd()} --cov-report xml tests/')
+subprocess.run(f'pytest --cov={os.getcwd()} --cov-report xml tests/',
+               shell=True)

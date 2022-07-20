@@ -11,18 +11,21 @@ import makros.macros.macro_import as macro_import
 class MakroParser:
     available_macros: List[MacroDef] = []
 
-    def __init__(self, file_path: Path, global_controller: "makros.makros.Makros"):
+    def __init__(self, file_path: Path,
+                 global_controller: "makros.makros.Makros"):
         self.file_path = file_path
         self.global_controller = global_controller
 
-    def parse_tokens(self, raw_tokens: Generator[tokenize.TokenInfo, None, None]) -> str:
+    def parse_tokens(
+            self, raw_tokens: Generator[tokenize.TokenInfo, None,
+                                        None]) -> str:
         tokens = Tokens(tokens_to_list(raw_tokens), str(self.file_path))
 
         # Note that we set this when parsing as some users may wish to parse
         # different files at different times
         self.global_controller.resolver.cwd = self.file_path.parent
 
-        current_line = tokens.peek().start[0]
+        current_line = -1  # We are starting at -1 to make sure we include the first line of the file
         output = ""
 
         for token in tokens:
@@ -99,7 +102,8 @@ class MakroParser:
         with open(out_path, 'w') as file:
             file.write(output)
 
-    def parse_macro(self, tokens: Tokens, token: tokenize.TokenInfo) -> Tuple[bool, str]:
+    def parse_macro(self, tokens: Tokens,
+                    token: tokenize.TokenInfo) -> Tuple[bool, str]:
         """This function is called on every name token to see if it matches one
         of the custom imported macros.
 

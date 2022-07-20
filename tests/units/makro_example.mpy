@@ -1,0 +1,7 @@
+macro import namespace
+
+namespace test:
+    export def hello():
+        print("Hello, World!")
+    
+test.hello()

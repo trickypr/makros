@@ -4,10 +4,8 @@ from pathlib import Path
 from os.path import isfile, join
 from makros.parser import MakroParser
 
-
 from makros.registration.resolver import Resolver
-from makros.utils import progressBar, sha256sum
-
+from makros.utils import sha256sum
 
 BOOTSTRAP_FOLDERS = ['macros', 'registration']
 HASH_FILE = Path(__file__).parent.joinpath('macros').__str__() + '.json'
@@ -40,7 +38,7 @@ class Makros:
 
             # For all of the files in this folder, run bootstrap then update the
             # macro hash if it has changed to avoid future recompiles
-            for file in progressBar(listdir(folder_path), 'Parsing macros'):
+            for file in listdir(folder_path):
                 new_hash = self.bootstrap_file(folder_path, file, macro_hash)
 
                 if new_hash:
