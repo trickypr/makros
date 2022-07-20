@@ -1,3 +1,4 @@
+from pprint import pprint
 from makros.tokens import TokenCase, Tokens
 from makros.macros.types import MacroParser, MacroTranslator
 from makros.tokens import TokenCase, Tokens
@@ -48,6 +49,7 @@ class Parser(MacroParser):
                 last_line = lines.pop()
                 tab = last_line.split('export')[0]
                 lines.append(tab + last_line.replace('export', '', 1).strip())
+                continue
 
             if tokens.match(TokenCase().type(tokenize.INDENT)):
                 indent += 1
@@ -111,4 +113,5 @@ class Translator(MacroTranslator):
             f'# End of namespace {ast.identifier.string}')
 
     def translate(self, ast: NamespaceAST.Namespace) -> str:
+        print(ast)
         return ast.visit(self)
