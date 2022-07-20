@@ -49,7 +49,6 @@ class Parser(MacroParser):
                 last_line = lines.pop()
                 tab = last_line.split('export')[0]
                 lines.append(tab + last_line.replace('export', '', 1).strip())
-                continue
 
             if tokens.match(TokenCase().type(tokenize.INDENT)):
                 indent += 1
