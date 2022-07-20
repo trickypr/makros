@@ -1,3 +1,4 @@
+import hashlib
 import tokenize
 from typing import Generator, List, TypeVar
 
@@ -40,7 +41,7 @@ def progressBar(iterable,
             100 * (iteration / float(total)))
         filledLength = int(length * iteration // total)
         bar = fill * filledLength + '-' * (length - filledLength)
-        print(f'\r{prefix} |{bar}| {percent}% {suffix}', end=printEnd)
+        # print(f'\r{prefix} |{bar}| {percent}% {suffix}', end=printEnd)
 
     # Initial Call
     printProgressBar(0)
@@ -59,7 +60,7 @@ def progressBar(iterable,
     #
     # Inelegant, inefficient, but functional
     max_length = len(f"{prefix} |{fill * length}| {'100.0%'} {suffix}")
-    print(" " * max_length, end=printEnd)
+    # print(" " * max_length, end=printEnd)
 
 
 class ReadableString:
@@ -98,3 +99,13 @@ T = TypeVar('T')
 
 def tokens_to_list(tokens: Generator[T, None, None]) -> List[T]:
     return [token for token in tokens]
+
+
+def sha256sum(filename):
+    h = hashlib.sha256()
+    b = bytearray(128 * 1024)
+    mv = memoryview(b)
+    with open(filename, 'rb', buffering=0) as f:
+        while n := f.readinto(mv):
+            h.update(mv[:n])
+    return h.hexdigest()

@@ -4,10 +4,10 @@ Getting started developing
 
 Prerequisites
 =============
- - Python knowledge
- - Git experience
- - A `fork of makros <https://github.com/trickypr/makros/fork>`_ cloned to your local computer
- - `Poetry installed <https://python-poetry.org/docs/>`_
+- Python knowledge
+- Git experience
+- A `fork of makros <https://github.com/trickypr/makros/fork>`_ cloned to your local computer
+- `Poetry installed <https://python-poetry.org/docs/>`_
 
 Setting up the build environment
 ================================
@@ -54,3 +54,4 @@ We have a custom test runner than can be invoked by running:
 .. code-block:: bash
 
     python tests
+

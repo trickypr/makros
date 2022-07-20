@@ -1,20 +1,29 @@
 import doctest
+from pathlib import Path
+import pprint
 from sphinx.ext.doctest import DoctestDirective, TestsetupDirective, TestcleanupDirective, TestcodeDirective, TestoutputDirective, DocTestBuilder
 
-from makros.lib import PyMacro
+from makros.makros import Makros
+from makros.parser import MakroParser
 
 
 class ToParse():
-    def __init__(self, text):
+    def __init__(self, text, parser: MakroParser):
         self.text = text
+        self.parser = parser
 
     def parse(self):
-        parser = PyMacro()
-        new = parser.parse_string(self.text).split('\n')
+        new = self.parser.parse_string(self.text).split('\n')
+
+        print("old")
+        print(self.text)
+        print("new")
+        print(new)
+
         first = new[0]
         rest = new[1:]
 
-        return [f">>> {first}", *["... {other}" for other in rest]]
+        return [f">>> {first}", *[f"... {other}" for other in rest]]
 
 
 class Output():
@@ -26,22 +35,27 @@ class MacroTest(DoctestDirective):
     has_content = True
 
     def run(self):
+        print(self.content)
+        parser = Makros.get().get_parser(Path("docs/makrotest"))
+
         content = []
 
         for line in self.content:  # type: ignore
-            if content.__str__().startswith('>>>'):
-                content.append(ToParse(line.replace('>>>', '')))
+            if line.startswith('>>>'):
+                content.append(ToParse(line.replace('>>>', ''), parser))
                 continue
 
-            if content.__str__().startswith('...'):
+            if line.startswith('...'):
                 if not isinstance(content[-1], ToParse):
                     raise Exception(
-                        f"Make sure there is a '>>>' before '{content}'")
+                        f"Make sure there is a '>>>' before '{line}'")
 
                 content[-1].text += f"\n{line.replace('...', '')}"
                 continue
 
             content.append(Output(line))
+
+        pprint.pprint(content)
 
         new_content = []
         for line in content:
@@ -50,12 +64,12 @@ class MacroTest(DoctestDirective):
             else:
                 new_content.append(line.text)
 
+        pprint.pprint(new_content)
+
         self.content = new_content
-        print(self.content)
+        # self.name = 'doctest'
 
         out = DoctestDirective.run(self)
-
-        print(out)
 
         return out
 
@@ -63,7 +77,7 @@ class MacroTest(DoctestDirective):
 def setup(app):
     app.add_directive('testsetup', TestsetupDirective)
     app.add_directive('testcleanup', TestcleanupDirective)
-    app.add_directive('doctest', MacroTest)
+    app.add_directive('macro_test', MacroTest)
     app.add_directive('testcode', TestcodeDirective)
     app.add_directive('testoutput', TestoutputDirective)
     app.add_builder(DocTestBuilder)
