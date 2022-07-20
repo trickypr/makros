@@ -14,8 +14,8 @@ namespace test:
 namespace other_test:
     name = ""
 
-    export def set_name(name):
-        name = name
+    export def set_name(newName):
+        name = newName
 
     def get_name():
         return name
