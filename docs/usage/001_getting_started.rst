@@ -19,24 +19,29 @@ Writing your first code
 By default makros behaves the same way they python interpreter does. A simple
 hello world example will look the same within makros or python:
 
-.. macro_test::
+.. code-block:: python
 
-        >>> print("Hello World!")
-        Hello World!
+    print("Hello World!")
 
 But from here, you are able to include "macros" in your code. Macros are parsers
 that extend what you can do with Python whilst still maintaining compatibility.
 For example, there is a makro that allows you to create namespaces:
 
-.. macro_test::
+.. code-block:: python
     
-    >>> macro import namespace
+    macro import namespace
+    
+    namespace hello:
+        export def world():
+            print("Hello World!")
+    
+    hello.world() # Should print out "Hello World!"
 
-    >>> namespace hello:
-    ...     export def world():
-    ...         print("Hello World!")
+This can then be run via the makros command in your terminal
 
-    >>> hello.world()
-    Hello World!
+.. code-block:: bash
 
+    makros file_path.mpy
 
+This will convert your ``.mpy`` file into a ``.py`` python file. It will also
+run the file right away. 
