@@ -1,5 +1,5 @@
 from genericpath import isdir
-from os import listdir, path
+from os import listdir, path, walk
 import sysconfig
 from pathlib import Path
 import token
@@ -127,7 +127,7 @@ class Resolver:
         macro_dict = manifest.macros[macro_index]
 
         return MacroDef(macro, registration_token,
-                        path.joinpath(macro_dict['file']).__str__())
+                        path.joinpath(macro_dict['file']).__str__().replace('.mpy', '.py'))
 
     def find_folder_recursive(self, resolution_string: str) -> Optional[Path]:
         """Finds a folder with a specific name in the current working directory recursively
@@ -139,9 +139,10 @@ class Resolver:
             Path: The path to this string, if any
         """
 
-        for path in self.cwd.rglob('*'):
-            if path.is_dir() and path.name == resolution_string:
-                return path
+        for path in walk(self.cwd.__str__()):
+            path = path[0]
+            if isdir(path) and path.split('/')[-1] == resolution_string:
+                return Path(path)
 
     def find_folder_pip(self, resolution_string: str) -> Optional[Path]:
         """Will attempt to find a file within the pip packages folder
