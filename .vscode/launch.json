@@ -5,12 +5,12 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Python: Current File",
+      "name": "Makros: Current File",
       "type": "python",
       "request": "launch",
-      "program": "src/cli.py",
+      "program": "makros/cli.py",
       "console": "integratedTerminal",
-      "args": ["tests/macros/local.mpy"]
+      "args": ["${file}"]
     }
   ]
 }
