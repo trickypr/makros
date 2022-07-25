@@ -66,5 +66,5 @@ poetry shell
 console.print(md)
 print()
 
-subprocess.run(f'pytest --cov={os.getcwd()} --cov-report xml tests/',
+subprocess.run(f'pytest --cov={os.getcwd()} --cov-report xml tests/ -vv',
                shell=True)
