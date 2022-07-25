@@ -21,9 +21,6 @@ jobs:
       - name: Run tests and collect coverage
         run: poetry run python ./tests
 
-      - name: Run doctests
-        run: cd docs && poetry run make doctest
-
       - name: Upload coverage reports to Codecov
         run: |
           # Replace `linux` below with the appropriate OS
