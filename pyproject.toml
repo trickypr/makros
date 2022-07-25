@@ -14,7 +14,12 @@ pytest = "^7.1.2"
 coverage = "^6.4.1"
 pytest-cov = "^3.0.0"
 Sphinx = "^5.0.2"
+furo = "^2022.6.21"
+sphinx-basic-ng = "^0.0.1-alpha.12"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["setuptools", "poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+makros = 'makros.cli:cli'

@@ -9,4 +9,18 @@ namespace test:
         internal()
         print("Hello World")
 
+# This namespace caused some errors in my testing. Not sure why, but it is here
+# to prevent regressions
+namespace other_test:
+    name = ""
+
+    export def set_name(newName):
+        name = newName
+
+    def get_name():
+        return name
+
+    export def print_name():
+        print(get_name())
+
 test.test()

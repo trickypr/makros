@@ -1,5 +1,5 @@
-from macros.types import MacroParser, MacroTranslator
-from tokens import Tokens
+from makros.macros.types import MacroParser, MacroTranslator
+from makros.tokens import Tokens
 
 macro import enum
 

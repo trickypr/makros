@@ -1,10 +1,14 @@
-from tokens import TokenCase, Tokens
-from macros.utils import camel_to_snake
-from macros.types import MacroParser, MacroTranslator
-from macros.pyx import create_class, create_func, program
+from pprint import pprint
+from makros.tokens import TokenCase, Tokens
+from makros.macros.types import MacroParser, MacroTranslator
+from makros.tokens import TokenCase, Tokens
+from makros.macros.pyx import create_class, create_func, program
+from makros.macros.utils import camel_to_snake
 from typing import List
 import tokenize
 from argparse import Namespace
+
+
 macro import enum
 
 
@@ -15,7 +19,7 @@ class Visit():
 
 
 enum NamespaceAST(Visit):
-    Statement(identifier: tokenize.TokenInfo)
+    Statement(identifier: str)
     Body(contents: str, stmts: List[NamespaceAST])
     Namespace(identifier: tokenize.TokenInfo, body: NamespaceAST)
 
@@ -35,16 +39,19 @@ class Parser(MacroParser):
                 current_line = tokens.previous().start[0]
                 lines.append(tokens.previous().line)
 
-            if tokens.match(TokenCase().type(tokenize.NAME).string('export')):
-                tokens.advance()
-                identifier = tokens.consume(TokenCase().type(
-                    tokenize.NAME), "Expected identifier")
-                statements.append(NamespaceAST.Statement(identifier))
-
-                # Remove export from the last line
+            if "export" in lines[-1]:
+                # The parser here was behaving a touch weirdly, so the solution
+                # is to create a poor-mans parser instead of using the real one.
                 last_line = lines.pop()
-                tab = last_line.split('export')[0]
-                lines.append(tab + last_line.replace('export', '', 1).strip())
+                text_indent = last_line.split('export')[0]
+                content = last_line.split('export')[1].strip()
+
+                # structured "def <name>(....):"
+                identifier = content.split(' ')[1].split('(')[0].strip()
+
+                statements.append(NamespaceAST.Statement(identifier))
+                lines.append(
+                    text_indent + last_line.replace('export', '', 1).strip())
 
             if tokens.match(TokenCase().type(tokenize.INDENT)):
                 indent += 1
@@ -79,7 +86,7 @@ class Parser(MacroParser):
 
 class Translator(MacroTranslator):
     def statement(self, ast: NamespaceAST.Body) -> str:
-        return f'{ast.identifier.string}: {ast.identifier.string}'
+        return f'{ast.identifier}: {ast.identifier.string}'
 
     def body(self, ast: NamespaceAST.Body):
         return_def = 'return { ' + \
@@ -90,10 +97,10 @@ class Translator(MacroTranslator):
             return_def)
 
     def namespace(self, ast: NamespaceAST.Namespace) -> str:
-        namespace_def_function = f'__{ast.identifier.string}_namespace_creator'
+        namespace_def_function = f'namespace_{ast.identifier.string}'
 
         namespace_exports = [
-            f'self.{export.identifier.string} = {export.identifier.string}' for export in ast.body.stmts]
+            f'self.{export.identifier} = {export.identifier}' for export in ast.body.stmts]
         namespace_class = create_class(namespace_def_function, create_func(
             '__init__', 'self', program(ast.body.contents, *namespace_exports)))
 

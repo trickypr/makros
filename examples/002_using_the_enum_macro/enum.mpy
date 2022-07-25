@@ -1,0 +1,17 @@
+macro import enum
+
+enum Animals:
+    Dog
+    Cat
+    Bird
+    Other(name: str)
+
+animal_1 = Animals.Cat
+animal_2 = Animals.Other("Lion")
+
+assert animal_1 == Animals.Cat
+assert animal_2 == Animals.Other
+
+assert animal_1 != animal_2
+
+print(animal_2.name)

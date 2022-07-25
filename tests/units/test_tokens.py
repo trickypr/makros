@@ -3,8 +3,8 @@ import tokenize
 from typing import List
 import pytest
 
-from tokens import TokenCase, Tokens
-from utils import get_tokens, tokens_to_list
+from makros.tokens import TokenCase, Tokens
+from makros.utils import get_tokens_from_file, tokens_to_list
 
 
 class TestTokenCase:
@@ -35,7 +35,7 @@ def includes_tokens(checker: TokenCase, tokens: List[tokenize.TokenInfo]):
 
 class TestTokens:
     def get_example_tokens(self) -> List[tokenize.TokenInfo]:
-        return tokens_to_list(get_tokens('./tests/units/example.py'))
+        return tokens_to_list(get_tokens_from_file('./tests/units/example.py'))
 
     def test_initialization(self):
         tokens = Tokens(self.get_example_tokens(), 'example.py')

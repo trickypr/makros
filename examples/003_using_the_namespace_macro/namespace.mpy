@@ -1,0 +1,28 @@
+macro import namespace
+
+namespace store:
+    store_contents = {}
+
+    def load_store():
+        print("Loading from store...")
+    
+    def save_store():
+        print("Saving to store...")
+    
+    export def set(key, value):
+        store_contents[key] = value
+        save_store()
+    
+    export def get(key):
+        return store_contents[key]
+    
+    load_store()
+
+
+# Set and get a key
+store.set('test', 'Hello world!')
+print(store.get('test'))
+
+# You cannot access unexported keys
+# store.load_store() # This will error
+# store.save_store() # This will error

@@ -1,4 +1,3 @@
-from importlib.machinery import SourceFileLoader
 from tokenize import TokenInfo
 import importlib.util as _importlib_util
 

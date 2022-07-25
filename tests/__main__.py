@@ -1,13 +1,13 @@
+import subprocess
 from typing import List
 from os import listdir
 from os.path import join, isfile
-import sys
 import os
 
-sys.path.append(os.getcwd() + '/src')
-
-from utils import progressBar
-
+from rich.progress import track
+from rich import print
+from rich.console import Console
+from rich.markdown import Markdown
 
 def get_files(folder_name: str) -> List[str]:
     all_items = [join(folder_name, item) for item in listdir(folder_name)]
@@ -16,12 +16,12 @@ def get_files(folder_name: str) -> List[str]:
     return files
 
 
-print("Preparing for pytest")
-print("====================")
+print("[bold]Preparing for pytest")
+print()
 
 files = [file for file in get_files('./tests/macros')]
 
-for file_name in progressBar(files):
+for file_name in track(files, description="Generating tests"):
     if not file_name.endswith('.mpy'):
         continue
 
@@ -29,33 +29,42 @@ for file_name in progressBar(files):
                                   '.py').replace('./tests/macros/',
                                                  './tests/macros/test_')
 
-    if os.path.exists(test_host):
-        continue
-
     with open(test_host, 'w') as file:
         file.write(f'''
 import pytest
 from coverage.execfile import run_python_file
-
-import sys
 import os
+from pathlib import Path
 
-old_cwd = os.getcwd()
-sys.path.append(os.getcwd() + '/src')
-from lib import translate_file
-sys.path.append(old_cwd)
+from makros.functions import translate_file
 
 def test_answer():
-    translate_file('{file_name}')
+    translate_file(Path('{file_name}'))
     run_python_file(['{file_name.replace('.mpy', '.py')}'])
 ''')
 
-print(
-    'Running pytest, if you get any errors make sure you are in a poetry shell'
-)
-print('\t| poetry shell')
+print()
+print("[bold]Installing global modules")
 print()
 
-print(os.getcwd())
+subprocess.run('''cd tests/macros/global
+pip install -e .''',
+               shell=True,
+               check=True,
+               executable='/bin/sh')
 
-os.system(f'pytest --cov={os.getcwd()} --cov-report xml tests/')
+print()
+console = Console()
+md = Markdown("""
+Running pytest. If you get any errors or warnings, this might be because you are
+not in a poetry shell. Try starting the poetry shell:
+
+```
+poetry shell
+```
+""")
+console.print(md)
+print()
+
+subprocess.run(f'pytest --cov={os.getcwd()} --cov-report xml tests/',
+               shell=True)

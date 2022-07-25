@@ -1,0 +1,4 @@
+# This file is a regular python file without any macros to demonstrate the usage
+# of the `makros` command.
+
+print("Hello world!")

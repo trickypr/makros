@@ -1,10 +1,10 @@
 import tokenize
 from typing import List, Optional
-from macros.types import MacroParser, MacroTranslator
-from macros.utils import camel_to_snake
-from tokens import TokenCase, Tokens
+from makros.macros.types import MacroParser, MacroTranslator
+from makros.macros.utils import camel_to_snake
+from makros.tokens import TokenCase, Tokens
 
-import macros.pyx as pyx
+import makros.macros.pyx as pyx
 
 
 class ASTBase():

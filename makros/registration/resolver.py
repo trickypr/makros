@@ -1,11 +1,12 @@
 from genericpath import isdir
-from os import listdir, path
+from os import listdir, path, walk
 import sysconfig
 from pathlib import Path
 import token
 from tokenize import TokenInfo
 from typing import Optional
-from registration.macro_def import MacroDef
+
+from makros.registration.macro_def import MacroDef
 
 SITE_PACKAGES = sysconfig.get_path('purelib')
 
@@ -51,7 +52,7 @@ class Resolver:
 
         if PackageManifest is None:
             PackageManifest = __import__(
-                'registration.manifest').manifest.PackageManifest
+                'makros.registration.manifest').registration.manifest.PackageManifest
 
     def get_internal_path(self, resolution_string: str) -> Path:
         """Gets the path object for the macro if it is one of the ones included
@@ -109,7 +110,7 @@ class Resolver:
         if path not in self.bootstrapped_folders:
             for to_bootstrap in manifest.bootstrap:
                 self.lib.bootstrap_file(path.__str__(),
-                                        path.joinpath(to_bootstrap).__str__(),
+                                        to_bootstrap,
                                         None)
 
             self.bootstrapped_folders.append(path)
@@ -126,7 +127,7 @@ class Resolver:
         macro_dict = manifest.macros[macro_index]
 
         return MacroDef(macro, registration_token,
-                        path.joinpath(macro_dict['file']).__str__())
+                        path.joinpath(macro_dict['file']).__str__().replace('.mpy', '.py'))
 
     def find_folder_recursive(self, resolution_string: str) -> Optional[Path]:
         """Finds a folder with a specific name in the current working directory recursively
@@ -138,9 +139,10 @@ class Resolver:
             Path: The path to this string, if any
         """
 
-        for path in self.cwd.rglob('*'):
-            if path.is_dir() and path.name == resolution_string:
-                return path
+        for path in walk(self.cwd.__str__()):
+            path = path[0]
+            if isdir(path) and path.split('/')[-1] == resolution_string:
+                return Path(path)
 
     def find_folder_pip(self, resolution_string: str) -> Optional[Path]:
         """Will attempt to find a file within the pip packages folder

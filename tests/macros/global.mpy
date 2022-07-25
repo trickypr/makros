@@ -1,17 +1,3 @@
-# Copy the global folder to the pip directory
-import os
-from pathlib import Path
-import sysconfig
-import shutil
-
-SITE_PACKAGES = sysconfig.get_path('purelib')
-site_folder = Path(SITE_PACKAGES).joinpath('global')
-
-if site_folder.exists():
-    shutil.rmtree(site_folder)
-
-shutil.copytree(Path(__file__).parent.joinpath('global-template'), site_folder)
-
-macro import local.hello
+macro import global.hello
 
 hello
