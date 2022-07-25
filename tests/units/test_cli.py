@@ -20,7 +20,6 @@ class TestCli:
                                  capture_output=True,
                                  env=env)
         stdout = str(process.stdout)
-        print(stdout)
 
         # Make sure it has the necessary information
         assert "Translates a macro python program into a python program and executes it" in stdout
@@ -37,6 +36,18 @@ class TestCli:
             capture_output=True,
             env=env)
         stdout = str(process.stdout)
-        print(stdout)
+
+        assert "Hello, World!" in stdout
+
+    def test_dunder_main(self):
+        # Note: The tests run in the root directory, be sure to provide the
+        # correct path
+        process = subprocess.run(
+            'makros tests/units/ --coverage',
+            check=True,
+            shell=True,
+            capture_output=True,
+            env=env)
+        stdout = str(process.stdout)
 
         assert "Hello, World!" in stdout

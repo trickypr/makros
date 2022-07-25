@@ -3,10 +3,6 @@ import tokenize
 from typing import Generator, List, TypeVar
 
 
-def getFileHash(path: str):
-    pass
-
-
 class ReadableString:
     def __init__(self, string: str):
         self.contents = string.split('\n')
