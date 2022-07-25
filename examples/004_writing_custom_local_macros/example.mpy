@@ -1,0 +1,7 @@
+macro import greet.hello
+
+name = "World"
+
+hello name
+
+hello "World"

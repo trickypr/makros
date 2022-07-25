@@ -1,0 +1,14 @@
+{
+  "name": "Greeter",
+  "package": "greet",
+  "description": "A selection of greeting macros",
+  "macros": [
+    {
+      "name": "Hello",
+      "keyword": "hello",
+      "file": "hello.mpy",
+      "description": "Say hello to someone"
+    }
+  ],
+  "bootstrap": ["hello.mpy"]
+}

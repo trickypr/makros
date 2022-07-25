@@ -1,0 +1,23 @@
+from makros.macros.types import MacroParser, MacroTranslator
+from makros.tokens import Tokens
+import tokenize
+
+
+class Parser(MacroParser):
+    def parse(self, tokens: Tokens) -> any:
+        token = tokens.advance()
+
+        token_return = '""'
+
+        if token.type == tokenize.STRING:
+            token_return = token.string.replace("'", '"')
+        
+        if token.type == tokenize.NAME:
+            token_return = token.string
+        
+        return token_return
+
+
+class Translator(MacroTranslator):
+    def translate(self, token_return: str) -> str:
+        return "print(f'Hello, {" + token_return + "}')"
