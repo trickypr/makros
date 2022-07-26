@@ -18,9 +18,11 @@ class MakroParser:
     Internally, the following state is tracked:
      - The current file path (used for error reporting)
      - The list of macros that have been imported
+     - The indentation at any point in the file
     """
 
     available_macros: List[MacroDef] = []
+    current_indentation: str = ''
 
     def __init__(self, file_path: Path,
                  global_controller: "makros.makros.Makros"):
@@ -50,6 +52,12 @@ class MakroParser:
         output = ""
 
         for token in tokens:
+            if token.type == tokenize.INDENT:
+                self.current_indentation += token.string
+            
+            if  token.type == tokenize.DEDENT:
+                self.current_indentation = self.current_indentation[:-len(token.string)]
+
             # If the token is of type name, we need to check if the token will
             # trigger a macro and, if it will, pass it over to that macro to
             # handle
@@ -165,6 +173,6 @@ class MakroParser:
 
                 # Don't trust the developer (probably me) to provide leading and
                 # trailing new lines
-                return (True, "\n" + translator.translate(macro_ast) + "\n")
+                return (True, "\n" + f'\n{self.current_indentation}'.join(translator.translate(macro_ast).split('\n')) + "\n")
 
         return (False, "")
