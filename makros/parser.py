@@ -9,6 +9,17 @@ import makros.macros.macro_import as macro_import
 
 
 class MakroParser:
+    """Provides an api for parsing a single file. This provides the following
+    methods for parsing a file:
+     - `parse_tokens`
+     - `parse_string`
+     - `parse`: Will parse the path provided in the constructor
+
+    Internally, the following state is tracked:
+     - The current file path (used for error reporting)
+     - The list of macros that have been imported
+    """
+
     available_macros: List[MacroDef] = []
 
     def __init__(self, file_path: Path,
@@ -19,6 +30,16 @@ class MakroParser:
     def parse_tokens(
             self, raw_tokens: Generator[tokenize.TokenInfo, None,
                                         None]) -> str:
+        """This is the base parsing method, which will convert a number of 
+        tokens into a valid python file.
+
+        Args:
+            raw_tokens (Generator[tokenize.TokenInfo, None, None]): The tokens that will be used by the parser
+
+        Returns:
+            str: The python file generated from expanding any containing macros
+        """
+
         tokens = Tokens(tokens_to_list(raw_tokens), str(self.file_path))
 
         # Note that we set this when parsing as some users may wish to parse
@@ -52,7 +73,7 @@ class MakroParser:
 
                     continue
 
-                enabled, returned = self.parse_macro(tokens, token)
+                enabled, returned = self._parse_macro(tokens, token)
 
                 output += returned
 
@@ -79,16 +100,23 @@ class MakroParser:
         return output
 
     def parse_string(self, string: str) -> str:
+        """Expand any macros used in the inputted string
+
+        Args:
+            string (str): The string that contains macros to be expanded
+
+        Returns:
+            str: The python generated from expanding the containing macros.
+        """
+
         # Take advantage of pythons tokenizer to tokenise the file and build a
         # helper object around it
         raw_tokens = get_tokens_from_string(string)
         return self.parse_tokens(raw_tokens)
 
     def parse(self) -> None:
-        """Will parse a file and write it to the same folder on the disk
-
-        Args:
-            file_path (Path): The path to the file you want to parse
+        """Reads the file provided in the Parser constructor, expands any of the
+        containing macros and outputs them back to the disk. 
         """
 
         # Take advantage of pythons tokenizer to tokenise the file and build a
@@ -102,7 +130,7 @@ class MakroParser:
         with open(out_path, 'w') as file:
             file.write(output)
 
-    def parse_macro(self, tokens: Tokens,
+    def _parse_macro(self, tokens: Tokens,
                     token: tokenize.TokenInfo) -> Tuple[bool, str]:
         """This function is called on every name token to see if it matches one
         of the custom imported macros.

@@ -1,5 +1,6 @@
 from genericpath import isdir
-from os import listdir, path, walk
+from os import listdir, walk
+from os.path import join
 import sysconfig
 from pathlib import Path
 import token
@@ -42,7 +43,7 @@ class Resolver:
         self.lib = lib
 
     def ensure_manifest_loader(self):
-        """The package manifest file is bootstraped after this file is loaded, 
+        """The package manifest file is bootstraped after this file is loaded,
         which may cause a race condition. As a shortcut around it, we will only
         import it when resolving external modules, well after everything has
         finished bootstrapping internally
@@ -127,7 +128,7 @@ class Resolver:
         macro_dict = manifest.macros[macro_index]
 
         return MacroDef(macro, registration_token,
-                        path.joinpath(macro_dict['file']).__str__().replace('.mpy', '.py'))
+                        str(path.joinpath(macro_dict['file'])).replace('.mpy', '.py'))
 
     def find_folder_recursive(self, resolution_string: str) -> Optional[Path]:
         """Finds a folder with a specific name in the current working directory recursively
@@ -139,8 +140,8 @@ class Resolver:
             Path: The path to this string, if any
         """
 
-        for path in walk(self.cwd.__str__()):
-            path = path[0]
+        for file in walk(str(self.cwd)):
+            path = file[0]
             if isdir(path) and path.split('/')[-1] == resolution_string:
                 return Path(path)
 
@@ -156,12 +157,14 @@ class Resolver:
 
         dirs = [
             d for d in listdir(SITE_PACKAGES)
-            if isdir(path.join(SITE_PACKAGES, d))
+            if isdir(join(SITE_PACKAGES, d))
         ]
 
-        for dir in dirs:
-            if dir == resolution_string:
-                return Path(dir)
+        for package_directory in dirs:
+            if package_directory == resolution_string:
+                return Path(package_directory)
+            
+        return None
 
     def resolve(self, resolution_string: str) -> MacroDef:
         """Call this function to resolve an import string, for example 'enum' or 'lib/something'

@@ -1,4 +1,3 @@
-import token
 import tokenize
 from typing import List, Optional
 
@@ -66,10 +65,21 @@ class Tokens:
         # Filter logical newlines and comments, as they are not handled well by
         # the macros that are implemented and provide no good value
         self.internal_token = list(
-            filter(lambda x: x.type != token.NL and x.type != token.COMMENT,
+            filter(lambda x: x.type not in (tokenize.NL, tokenize.COMMENT),
                    tokens))
 
     def error(self, token_something_else: tokenize.TokenInfo, message: str):
+        """Will print an error message at the specific token, including context,
+        to help the programmer figure out what is going wrong
+
+        Args:
+            token_something_else (tokenize.TokenInfo): The token that the error occurred at
+            message (str): Your human readable error message
+
+        Raises:
+            Exception: The error for a stack trace
+        """
+
         from rich import print
 
         print(
@@ -94,9 +104,21 @@ class Tokens:
         return self.internal_token[self.current_token_index]
 
     def previous(self) -> tokenize.TokenInfo:
+        """Returns the token before the current one
+
+        Returns:
+            tokenize.TokenInfo: The last token
+        """
+
         return self.internal_token[self.current_token_index - 1]
 
     def advance(self) -> tokenize.TokenInfo:
+        """Goes forward one token
+
+        Returns:
+            tokenize.TokenInfo: The token that was just passed over
+        """
+        
         if not self.is_at_end():
             self.current_token_index += 1
 
@@ -106,7 +128,7 @@ class Tokens:
         """
         Returns true if the next token is an end marker
         """
-        return self.peek().type == token.ENDMARKER
+        return self.peek().type == tokenize.ENDMARKER
 
     # ==============
     # Code functions
@@ -114,18 +136,45 @@ class Tokens:
 
     def consume(self, checker: TokenCase,
                 failure_message: str) -> tokenize.TokenInfo:
+        """Will consume the next token if it matches the checker, otherwise it
+        will raise an error
+
+        Args:
+            checker (TokenCase): The case that will be checked against
+            failure_message (str): The error message that you want to provide to the user
+
+        Returns:
+            tokenize.TokenInfo: The consumed token
+        """
+
         if self.check(checker):
             return self.advance()
 
         self.error(self.peek(), failure_message)
 
     def check(self, checker: TokenCase) -> bool:
+        """Checks the next token against the next token in the buffer
+
+        Args:
+            checker (TokenCase): The token checking case that you want to check
+
+        Returns:
+            bool: If the token matches the case
+        """
+
         if self.is_at_end():
             return False
 
         return checker.check(self.peek())
 
     def match(self, *types: TokenCase) -> bool:
+        """Matches any of the provided cases against the next token. Advances if
+        it finds a new one
+
+        Returns:
+            bool: If it has found a match to any of the different checkers
+        """
+        
         for checker in types:
             if checker.check(self.peek()):
                 self.advance()

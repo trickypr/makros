@@ -8,12 +8,24 @@ from makros.registration.resolver import Resolver
 from makros.utils import sha256sum
 
 BOOTSTRAP_FOLDERS = ['macros', 'registration']
-HASH_FILE = Path(__file__).parent.joinpath('macros').__str__() + '.json'
+HASH_FILE = str(Path(__file__).parent.joinpath('macros')) + '.json'
 
-makros = None
+MAKROS = None
 
 
 class Makros:
+    """Responsible for tracking the progress of expensive tasks and objects that
+    should not be run more than once. These include:
+
+    - Boostrapping the library
+    - Keeping a copy of the resolver (requires bootstrapping)
+
+    It also should be used for instantiating subclasses that depend on any of
+    the above features. These include:
+    
+    - The parser
+    """
+
     resolver = Resolver()
 
     def __init__(self):
@@ -34,7 +46,7 @@ class Makros:
             macro_hash = json.loads(open(HASH_FILE).read())
 
         for folder in BOOTSTRAP_FOLDERS:
-            folder_path = Path(__file__).parent.joinpath(folder).__str__()
+            folder_path = str(Path(__file__).parent.joinpath(folder))
 
             # For all of the files in this folder, run bootstrap then update the
             # macro hash if it has changed to avoid future recompiles
@@ -74,9 +86,10 @@ class Makros:
         #  - The macro_hash object has been defined
         #  - The macro_hash object contains this file
         #  - The file hash matches the macro_hash of this file
-        if macro_hash is not None and macro_hash.__contains__(
-                folder_path + file) and file_hash == macro_hash[folder_path +
-                                                                file]:
+        is_in_hash = macro_hash is not None and folder_path + file in macro_hash
+        hash_matches = is_in_hash and file_hash == macro_hash[folder_path + file]
+
+        if hash_matches:
             return
 
         MakroParser(Path(join(folder_path, file)), self).parse()
@@ -85,12 +98,30 @@ class Makros:
         return file_hash
 
     def get_parser(self, path: Path) -> MakroParser:
+        """Returns a parser that is instanciated with access to the global
+        resolver instance.
+
+        Args:
+            path (Path): The file you plan to be parsing. You can provide a fake path if you plan on parsing a string or a token list
+
+        Returns:
+            MakroParser: The parser that you should use for parsing the file
+        """
+
         return MakroParser(path, self)
 
+    @staticmethod
     def get() -> "Makros":
-        global makros
+        """Gets the global instance of Makros. Makros should be a singleton for
+        performance, hence the get method
 
-        if makros is None:
-            makros = Makros()
+        Returns:
+            Makros: An instance of the makros object
+        """
 
-        return makros
+        global MAKROS
+
+        if MAKROS is None:
+            MAKROS = Makros()
+
+        return MAKROS
