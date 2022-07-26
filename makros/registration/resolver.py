@@ -162,8 +162,8 @@ class Resolver:
 
         for package_directory in dirs:
             if package_directory == resolution_string:
-                return Path(package_directory)
-            
+                return Path(join(SITE_PACKAGES, package_directory))
+
         return None
 
     def resolve(self, resolution_string: str) -> MacroDef:

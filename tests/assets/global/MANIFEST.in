@@ -1,0 +1,2 @@
+include global/*.json
+include global/*.mpy

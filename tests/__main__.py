@@ -47,8 +47,8 @@ print()
 print("[bold]Installing global modules")
 print()
 
-subprocess.run('''cd tests/macros/global_template
-pip install -e .''',
+subprocess.run('''cd tests/assets/global
+python -m build && pip install --force-reinstall ./dist/global-0.0.1-py3-none-any.whl''',
                shell=True,
                check=True,
                executable='/bin/sh')
