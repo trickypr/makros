@@ -12,8 +12,8 @@ Extend the Python language with (relative) ese
 
 This program converts custom python files with a custom syntax to regular python files. The overall goals of this project are:
 
-1. To include some of the features that I feel are missing from the python programming language
-2. Provide a method for others to use this functionality without needing to contribute to this repo
+1.  To include some of the features that I feel are missing from the python programming language
+2.  Provide a method for others to use this functionality without needing to contribute to this repo
 
 ## Installation
 
