@@ -16,7 +16,9 @@ jobs:
           python-version: "3.10"
 
       - name: Install deps
-        run: poetry install
+        run: |
+          poetry install
+          poetry run pip install build setuptools
 
       - name: Run tests and collect coverage
         run: poetry run python ./tests
