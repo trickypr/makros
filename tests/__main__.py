@@ -47,7 +47,7 @@ print()
 print("[bold]Installing global modules")
 print()
 
-subprocess.run('''cd tests/macros/global
+subprocess.run('''cd tests/macros/global_template
 pip install -e .''',
                shell=True,
                check=True,
