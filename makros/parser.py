@@ -54,6 +54,10 @@ class MakroParser:
         for token in tokens:
             if token.type == tokenize.INDENT:
                 self.current_indentation += token.string
+
+                # Indentation tokens are done before macro parsing, so they can
+                # lead to the macro value being passed through to the output
+                continue
             
             if  token.type == tokenize.DEDENT:
                 self.current_indentation = self.current_indentation[:-len(token.string)]
