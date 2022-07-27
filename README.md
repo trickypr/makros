@@ -50,6 +50,4 @@ Then just run it with makros:
 makros my_file.mpy
 ```
 
-For more info, please read our docs.
-
-**TODO:** Host docs online
+For more info, please [read our docs](https://makros.readthedocs.io/en/latest/index.html).
