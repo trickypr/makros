@@ -2,7 +2,7 @@ import argparse
 import pathlib
 import sys
 
-from makros.functions import translate_folder
+from makros import translate_folder
 
 
 def cli(args=None):

@@ -2,4 +2,4 @@ from makros.makros import Makros
 from makros.parser import MakroParser
 from makros.functions import *
 
-import macro_creation
+import makros.macro_creation as macro_creation

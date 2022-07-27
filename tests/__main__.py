@@ -36,7 +36,7 @@ from coverage.execfile import run_python_file
 import os
 from pathlib import Path
 
-from makros.functions import translate_file
+from makros import translate_file
 
 def test_answer():
     translate_file(Path('{file_name}'))
