@@ -1,0 +1,6 @@
+﻿makros.translate\_file
+======================
+
+.. currentmodule:: makros
+
+.. autofunction:: translate_file

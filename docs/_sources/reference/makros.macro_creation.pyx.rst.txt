@@ -1,0 +1,33 @@
+﻿pyx
+===
+
+.. currentmodule:: makros.macro_creation.pyx
+
+.. automodule:: makros.macro_creation.pyx
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   
+   .. autofunction:: create_class
+   .. autofunction:: create_func
+   .. autofunction:: indent
+   .. autofunction:: program
+   
+   
+
+   
+   
+   
+
+
+

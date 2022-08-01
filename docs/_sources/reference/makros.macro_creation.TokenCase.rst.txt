@@ -1,0 +1,23 @@
+﻿TokenCase
+=========
+
+Qualified name: ``makros.macro\_creation.TokenCase``
+
+.. currentmodule:: makros.macro_creation
+
+.. autoclass:: TokenCase
+   :show-inheritance:
+   :members:
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+      
+      ~TokenCase.check
+      ~TokenCase.string
+      ~TokenCase.type
+
+   
+   

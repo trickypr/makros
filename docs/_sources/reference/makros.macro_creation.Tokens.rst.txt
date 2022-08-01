@@ -1,0 +1,28 @@
+﻿Tokens
+======
+
+Qualified name: ``makros.macro\_creation.Tokens``
+
+.. currentmodule:: makros.macro_creation
+
+.. autoclass:: Tokens
+   :show-inheritance:
+   :members:
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+      
+      ~Tokens.advance
+      ~Tokens.check
+      ~Tokens.consume
+      ~Tokens.error
+      ~Tokens.is_at_end
+      ~Tokens.match
+      ~Tokens.peek
+      ~Tokens.previous
+
+   
+   

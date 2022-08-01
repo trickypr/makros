@@ -1,0 +1,6 @@
+﻿makros.translate\_folder
+========================
+
+.. currentmodule:: makros
+
+.. autofunction:: translate_folder

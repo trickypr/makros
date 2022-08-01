@@ -1,0 +1,22 @@
+﻿Makros
+======
+
+Qualified name: ``makros.Makros``
+
+.. currentmodule:: makros
+
+.. autoclass:: Makros
+   :show-inheritance:
+   :members:
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+      
+      ~Makros.get
+      ~Makros.get_parser
+
+   
+   

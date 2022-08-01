@@ -1,0 +1,30 @@
+﻿MakroParser
+===========
+
+Qualified name: ``makros.MakroParser``
+
+.. currentmodule:: makros
+
+.. autoclass:: MakroParser
+   :show-inheritance:
+   :members:
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+      
+      ~MakroParser.parse
+      ~MakroParser.parse_path
+      ~MakroParser.parse_string
+      ~MakroParser.parse_tokens
+
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+     
+     ~MakroParser.available_macros
+     ~MakroParser.current_indentation
+   
