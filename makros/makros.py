@@ -26,11 +26,10 @@ class Makros:
     - The parser
     """
 
-    resolver = Resolver()
+    _resolver = Resolver()
 
     def __init__(self):
-        self.bootstrap()
-        self.resolver.add_lib(self)
+        self._resolver.add_lib(self)
 
     def bootstrap(self) -> None:
         """Will parse and convert all of the mpy files into py files so that

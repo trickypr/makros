@@ -46,7 +46,7 @@ class MakroParser:
 
         # Note that we set this when parsing as some users may wish to parse
         # different files at different times
-        self.global_controller.resolver.cwd = self.file_path.parent
+        self.global_controller._resolver.cwd = self.file_path.parent
 
         current_line = -1  # We are starting at -1 to make sure we include the first line of the file
         output = ""
@@ -80,7 +80,7 @@ class MakroParser:
                         macro_string += macro_ast.macro.string
 
                     self.available_macros.append(
-                        self.global_controller.resolver.resolve(macro_string))
+                        self.global_controller._resolver.resolve(macro_string))
                     output += f"# Macro imported: {macro_string}\n"
 
                     continue
