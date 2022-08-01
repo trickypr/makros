@@ -56,7 +56,7 @@ class TokenCase:
 class Tokens:
     """A helper token for working with macros"""
 
-    current_token_index: int = 0
+    _current_token_index: int = 0
 
     def __init__(self, tokens: List[tokenize.TokenInfo], filename: str):
         self.filename = filename
@@ -100,7 +100,7 @@ class Tokens:
         Returns what the next token will be without modifying the current toke
         in the buffer
         """
-        return self.internal_token[self.current_token_index]
+        return self.internal_token[self._current_token_index]
 
     def previous(self) -> tokenize.TokenInfo:
         """Returns the token before the current one
@@ -109,7 +109,7 @@ class Tokens:
             tokenize.TokenInfo: The last token
         """
 
-        return self.internal_token[self.current_token_index - 1]
+        return self.internal_token[self._current_token_index - 1]
 
     def advance(self) -> tokenize.TokenInfo:
         """Goes forward one token
@@ -119,7 +119,7 @@ class Tokens:
         """
         
         if not self.is_at_end():
-            self.current_token_index += 1
+            self._current_token_index += 1
 
         return self.previous()
 
