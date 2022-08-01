@@ -110,7 +110,7 @@ class Resolver:
         # like enums which are very helpful for writing AST
         if path not in self.bootstrapped_folders:
             for to_bootstrap in manifest.bootstrap:
-                self.lib.bootstrap_file(path.__str__(),
+                self.lib._bootstrap_file(path.__str__(),
                                         to_bootstrap,
                                         None)
 

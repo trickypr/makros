@@ -50,7 +50,7 @@ class Makros:
             # For all of the files in this folder, run bootstrap then update the
             # macro hash if it has changed to avoid future recompiles
             for file in listdir(folder_path):
-                new_hash = self.bootstrap_file(folder_path, file, macro_hash)
+                new_hash = self._bootstrap_file(folder_path, file, macro_hash)
 
                 if new_hash:
                     macro_hash[folder_path + file] = new_hash
@@ -59,7 +59,7 @@ class Makros:
         with open(HASH_FILE, 'w') as file:
             file.write(json.dumps(macro_hash))
 
-    def bootstrap_file(self, folder_path, file, macro_hash):
+    def _bootstrap_file(self, folder_path, file, macro_hash):
         """Will bootstrap a specific file if a similar version of that file has
         not already been boostraped
 
