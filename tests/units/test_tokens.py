@@ -106,7 +106,7 @@ class TestTokens:
 
         assert tokens.match(TokenCase().type(token.NAME).string('for'),
                             TokenCase().type(token.OP).string('_'))
-        assert tokens.current_token_index == 1
+        assert tokens._current_token_index == 1
         assert not tokens.match(TokenCase().type(token.NAME).string('for'),
                                 TokenCase().type(token.NAME).string('in'))
 

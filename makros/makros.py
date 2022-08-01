@@ -14,7 +14,8 @@ MAKROS = None
 
 
 class Makros:
-    """Responsible for tracking the progress of expensive tasks and objects that
+    """
+    Responsible for tracking the progress of expensive tasks and objects that
     should not be run more than once. These include:
 
     - Boostrapping the library
@@ -27,11 +28,17 @@ class Makros:
     """
 
     _resolver = Resolver()
+    """Globally responsible for locating makros within the file system.
+    """
 
     def __init__(self):
+        """Constructs the Makros class, AVOID USING, USE ``.get()`` INSTEAD!
+        """
+
+        self._bootstrap()
         self._resolver.add_lib(self)
 
-    def bootstrap(self) -> None:
+    def _bootstrap(self) -> None:
         """Will parse and convert all of the mpy files into py files so that
         other parts makros can use them, reducing the amount of code I have to
         write
@@ -91,7 +98,8 @@ class Makros:
         if hash_matches:
             return
 
-        MakroParser(Path(join(folder_path, file)), self).parse()
+        parser = self.get_parser(Path(join(folder_path, file)))
+        parser.parse()
 
         # Return the new macro hash so it can be updated
         return file_hash

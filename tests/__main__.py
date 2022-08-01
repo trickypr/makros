@@ -33,7 +33,6 @@ for file_name in track(files, description="Generating tests"):
         file.write(f'''
 import pytest
 from coverage.execfile import run_python_file
-import os
 from pathlib import Path
 
 from makros import translate_file

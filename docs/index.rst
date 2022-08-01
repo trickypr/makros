@@ -7,3 +7,5 @@ Makros documentation overview
 
    usage
    contributing
+   reference
+

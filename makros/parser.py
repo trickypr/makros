@@ -9,20 +9,33 @@ import makros.macros.macro_import as macro_import
 
 
 class MakroParser:
-    """Provides an api for parsing a single file. This provides the following
-    methods for parsing a file:
-     - `parse_tokens`
-     - `parse_string`
-     - `parse`: Will parse the path provided in the constructor
+    """
+    Provides an api for parsing a single file. You should avoid constructing 
+    this class directly and instead use ``Makros.get()``. This provides the 
+    following methods for parsing a file:
 
-    Internally, the following state is tracked:
-     - The current file path (used for error reporting)
-     - The list of macros that have been imported
-     - The indentation at any point in the file
+    - parse: Parses the file at the path that is passed into the constructor and writes content do disk
+    - parse_path: Parses the file at the provided path and writes content to disk
+    - parse_string: Parses the string provided to the method and returns the output as a string
+    - parse_tokens: Parses the tokens provided to the method and returns the output as a string
+
+    Internally, the following state is maintained, it is generally good to avoid
+    changing it:
+
+    - available_macros
+    - current_indentation
+
+    Because internal state is maintained, it is generally a good idea to create
+    a new parser instance for each file that is being parsed.
     """
 
     available_macros: List[MacroDef] = []
+    """The macros that have been imported into the file
+    """
+
     current_indentation: str = ''
+    """The current indentation level of the macro file
+    """
 
     def __init__(self, file_path: Path,
                  global_controller: "makros.makros.Makros"):
@@ -32,7 +45,8 @@ class MakroParser:
     def parse_tokens(
             self, raw_tokens: Generator[tokenize.TokenInfo, None,
                                         None]) -> str:
-        """This is the base parsing method, which will convert a number of 
+        """
+        This is the base parsing method, which will convert a number of 
         tokens into a valid python file.
 
         Args:
@@ -131,14 +145,23 @@ class MakroParser:
         containing macros and outputs them back to the disk. 
         """
 
+        self.parse_path(self.file_path)
+
+    def parse_path(self, path: Path) -> None:
+        """Parses the provided path and writes the contents to disk
+
+        Args:
+            path (Path): The path you wish to parse
+        """
+
         # Take advantage of pythons tokenizer to tokenise the file and build a
         # helper object around it
-        raw_tokens = get_tokens_from_file(str(self.file_path))
+        raw_tokens = get_tokens_from_file(str(path))
 
         output = self.parse_tokens(raw_tokens)
 
         # Write the macro to the disk
-        out_path = str(self.file_path).replace('.mpy', '.py')
+        out_path = str(path).replace('.mpy', '.py')
         with open(out_path, 'w') as file:
             file.write(output)
 

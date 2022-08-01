@@ -6,8 +6,8 @@ class TokenCase:
     """Used to check if a token matches specific details
     """
 
-    token_type: Optional[int] = None
-    token_string: Optional[str] = None
+    _token_type: Optional[int] = None
+    _token_string: Optional[str] = None
 
     def type(self, new_type: int):
         """Specifies the token type to check against
@@ -18,7 +18,7 @@ class TokenCase:
         Returns:
             TokenCase: This TokenCase instance, used for checking
         """
-        self.token_type = new_type
+        self._token_type = new_type
         return self
 
     def string(self, new_str: str):
@@ -31,7 +31,7 @@ class TokenCase:
             TokenCase: This TokenCase instance, used for chaining
         """
 
-        self.token_string = new_str
+        self._token_string = new_str
         return self
 
     def check(self, token: tokenize.TokenInfo) -> bool:
@@ -44,17 +44,20 @@ class TokenCase:
             bool: If it matches or not
         """
 
-        if self.token_type is not None and self.token_type != token.type:
+        if self._token_type is not None and self._token_type != token.type:
             return False
 
-        if self.token_string is not None and self.token_string != token.string:
+        if self._token_string is not None and self._token_string != token.string:
             return False
 
         return True
 
 
 class Tokens:
-    """A helper token for working with macros"""
+    """
+    A helper class that wraps around a list of tokens, providing common methods
+    that might be needed for writing a recursive decent parser
+    """
 
     _current_token_index: int = 0
 
@@ -129,10 +132,6 @@ class Tokens:
         """
         return self.peek().type == tokenize.ENDMARKER
 
-    # ==============
-    # Code functions
-    # ==============
-
     def consume(self, checker: TokenCase,
                 failure_message: str) -> tokenize.TokenInfo:
         """Will consume the next token if it matches the checker, otherwise it
@@ -180,6 +179,8 @@ class Tokens:
                 return True
 
         return False
+
+    # Iterator methods are used by the for loop in MakroParser
 
     def __iter__(self):
         """The actual iterator is created in the __next__ function."""
