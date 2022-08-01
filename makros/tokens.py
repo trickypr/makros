@@ -56,7 +56,6 @@ class TokenCase:
 class Tokens:
     """A helper token for working with macros"""
 
-    current_token: Optional[tokenize.TokenInfo] = None
     current_token_index: int = 0
 
     def __init__(self, tokens: List[tokenize.TokenInfo], filename: str):
