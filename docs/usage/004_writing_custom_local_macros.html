@@ -307,6 +307,42 @@ as the folder is within your project tree. You can then use it in your code:</p>
 <p>You can publish your macro to pypi and the makro command will index it by package
 name. Complete source code for this example is <a class="reference external" href="https://github.com/trickypr/makros/tree/main/examples/004_writing_custom_local_macros">available on GitHub</a>.</p>
 </section>
+<section id="helpful-code-snippets">
+<h2>Helpful code snippets<a class="headerlink" href="#helpful-code-snippets" title="Permalink to this heading">#</a></h2>
+<p>There are a number of generators (dubbed pyx) which can be used to generate code
+valid python code programmatically.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">makros.macro_creation.pyx</span> <span class="k">as</span> <span class="nn">pyx</span>
+
+<span class="n">pyx</span><span class="o">.</span><span class="n">program</span><span class="p">(</span>
+    <span class="c1"># Debug comment</span>
+    <span class="sa">f</span><span class="s1">&#39;# Start of namespace </span><span class="si">{</span><span class="n">ast</span><span class="o">.</span><span class="n">identifier</span><span class="o">.</span><span class="n">string</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="n">pyx</span><span class="o">.</span><span class="n">create_class</span><span class="p">(</span>
+        <span class="c1"># Class name</span>
+        <span class="n">namespace_def_function</span><span class="p">,</span>
+
+        <span class="c1"># Class body</span>
+        <span class="n">pyx</span><span class="o">.</span><span class="n">create_func</span><span class="p">(</span>
+            <span class="c1"># Function name</span>
+            <span class="s1">&#39;__init__&#39;</span><span class="p">,</span>
+
+            <span class="c1"># Function args</span>
+            <span class="s1">&#39;self&#39;</span><span class="p">,</span>
+
+            <span class="c1"># Function body</span>
+            <span class="n">ast</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="p">),</span>
+
+    <span class="c1"># Create an instance of the class</span>
+    <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">ast</span><span class="o">.</span><span class="n">identifier</span><span class="o">.</span><span class="n">string</span><span class="si">}</span><span class="s1"> = </span><span class="si">{</span><span class="n">namespace_def_function</span><span class="si">}</span><span class="s1">()&#39;</span><span class="p">,</span>
+    <span class="c1"># Remove the original class, we don&#39;t need it anymore</span>
+    <span class="sa">f</span><span class="s1">&#39;del </span><span class="si">{</span><span class="n">namespace_def_function</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="c1"># Debug comment</span>
+    <span class="sa">f</span><span class="s1">&#39;# End of namespace </span><span class="si">{</span><span class="n">ast</span><span class="o">.</span><span class="n">identifier</span><span class="o">.</span><span class="n">string</span><span class="si">}</span><span class="s1">&#39;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
 </section>
 
         </article>
@@ -368,6 +404,7 @@ name. Complete source code for this example is <a class="reference external" hre
             <ul>
 <li><a class="reference internal" href="#">Writing custom macros locally</a><ul>
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li><a class="reference internal" href="#helpful-code-snippets">Helpful code snippets</a></li>
 </ul>
 </li>
 </ul>
