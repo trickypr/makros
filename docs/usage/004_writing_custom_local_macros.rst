@@ -100,3 +100,41 @@ as the folder is within your project tree. You can then use it in your code:
 
 You can publish your macro to pypi and the makro command will index it by package
 name. Complete source code for this example is `available on GitHub <https://github.com/trickypr/makros/tree/main/examples/004_writing_custom_local_macros>`_.
+
+Helpful code snippets
+=====================
+
+There are a number of generators (dubbed pyx) which can be used to generate code
+valid python code programmatically. 
+
+.. code-block:: python
+
+    import makros.macro_creation.pyx as pyx
+    
+    pyx.program(
+        # Debug comment
+        f'# Start of namespace {ast.identifier.string}',
+        pyx.create_class(
+            # Class name
+            namespace_def_function,
+
+            # Class body
+            pyx.create_func(
+                # Function name
+                '__init__',
+
+                # Function args
+                'self',
+
+                # Function body
+                ast.body.visit(self)
+            )
+        ),
+
+        # Create an instance of the class    
+        f'{ast.identifier.string} = {namespace_def_function}()',
+        # Remove the original class, we don't need it anymore
+        f'del {namespace_def_function}',
+        # Debug comment
+        f'# End of namespace {ast.identifier.string}'
+    )

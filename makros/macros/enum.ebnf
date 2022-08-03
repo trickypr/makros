@@ -1,4 +1,4 @@
-<enum> ::= 'emum' <identifier> ':' <indent> {<enum_body>} <dedent>
+<enum> ::= 'emum' <identifier> ':' <newline> <indent> {<enum_body>} <dedent>
 
 <enum_body> ::= <identifier> [<arg_definition>] '\n'
 <arg_definition> ::= <tuple_args>

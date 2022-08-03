@@ -11,7 +11,5 @@ class namespace_test:
 
 test = namespace_test()
 del namespace_test
-
-
 # End of namespace test
 test.hello()

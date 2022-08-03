@@ -148,7 +148,7 @@ class Tokens:
         if self.check(checker):
             return self.advance()
 
-        self.error(self.peek(), failure_message)
+        self.error(self.peek(), f"Expected {tokenize.tok_name[checker._token_type]}, found {tokenize.tok_name[self.peek().type]} {failure_message}")
 
     def check(self, checker: TokenCase) -> bool:
         """Checks the next token against the next token in the buffer

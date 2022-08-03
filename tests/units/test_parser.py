@@ -60,8 +60,6 @@ class namespace_store:
 
 store = namespace_store()
 del namespace_store
-
-
 # End of namespace store
 store.set('test', 'Hello world!')
 print(store.get('test'))

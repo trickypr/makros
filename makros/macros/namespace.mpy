@@ -1,8 +1,7 @@
-from pprint import pprint
 from makros.tokens import TokenCase, Tokens
 from makros.macros.types import MacroParser, MacroTranslator
 from makros.tokens import TokenCase, Tokens
-from makros.macros.pyx import create_class, create_func, program
+import makros.macros.pyx as pyx
 from makros.macros.utils import camel_to_snake
 from typing import List
 import tokenize
@@ -35,10 +34,17 @@ class Parser(MacroParser):
         tab = ' ' * 4
 
         while not tokens.is_at_end():
+            # If the current token is on a different line, we need to add the
+            # line to the list
             if current_line != tokens.previous().start[0]:
                 current_line = tokens.previous().start[0]
                 lines.append(tokens.previous().line)
 
+            # If the last token contains the "export" keyword, then we need to
+            # export the function.
+            #
+            # TODO: This can be triggered if there is export in something else, 
+            # e.g. a string
             if "export" in lines[-1]:
                 # The parser here was behaving a touch weirdly, so the solution
                 # is to create a poor-mans parser instead of using the real one.
@@ -49,10 +55,14 @@ class Parser(MacroParser):
                 # structured "def <name>(....):"
                 identifier = content.split(' ')[1].split('(')[0].strip()
 
+                # Make a note of the exported
                 statements.append(NamespaceAST.Statement(identifier))
+                # Remove the export keyword from the line
                 lines.append(
                     text_indent + last_line.replace('export', '', 1).strip())
 
+            # Keep track of the indentation level. Also advance the tokens so we
+            # don't get stuck in an infinite loop
             if tokens.match(TokenCase().type(tokenize.INDENT)):
                 indent += 1
             elif tokens.match(TokenCase().type(tokenize.DEDENT)):
@@ -67,52 +77,78 @@ class Parser(MacroParser):
                 lines.pop()
                 break
 
+        # Helpful error reporting
         if tokens.is_at_end():
             tokens.error("Expected dedent, found end of file")
 
+        # Format it into AST
         return NamespaceAST.Body('\n'.join([line.replace(tab, '', 1) for line in lines]), statements)
 
-    def parse(self, tokens: Tokens) -> any:  # type: ignore
+    def parse(self, tokens: Tokens) -> any:
+        # The name of the namespace
         identifier = tokens.consume(TokenCase().type(
             tokenize.NAME), 'Expected namespace identifier')
 
+        # Consume the starting tokens
         tokens.consume(TokenCase().type(
             tokenize.OP).string(':'), "Expected ':'")
         tokens.consume(TokenCase().type(tokenize.NEWLINE), "Expected newline")
         tokens.consume(TokenCase().type(tokenize.INDENT), "Expected indent")
 
-        return NamespaceAST.Namespace(identifier, self.body(tokens))
+        body = self.body(tokens)
+
+        return NamespaceAST.Namespace(identifier, body)
 
 
 class Translator(MacroTranslator):
     def statement(self, ast: NamespaceAST.Body) -> str:
-        return f'{ast.identifier}: {ast.identifier.string}'
+        return f'self.{ast.identifier} = {ast.identifier}'
 
     def body(self, ast: NamespaceAST.Body):
-        return_def = 'return { ' + \
-            ", ".join([export.visit(self) for export in ast.stmts]) + ' }'
+        """The body of the namespace
+        """
 
-        return program(
-            *ast.contents.split('\n'),
-            return_def)
+        return pyx.program(
+            ast.contents, 
+            *[export.visit(self) for export in ast.stmts]
+        )
 
     def namespace(self, ast: NamespaceAST.Namespace) -> str:
+        # Generate a namespace name
         namespace_def_function = f'namespace_{ast.identifier.string}'
 
-        namespace_exports = [
-            f'self.{export.identifier} = {export.identifier}' for export in ast.body.stmts]
-        namespace_class = create_class(namespace_def_function, create_func(
-            '__init__', 'self', program(ast.body.contents, *namespace_exports)))
-
-        return program(
+        return pyx.program(
+            # Debug comment
             f'# Start of namespace {ast.identifier.string}',
-            namespace_class,
+            pyx.create_class(
+                # Class name
+                namespace_def_function,
 
+                # Class body
+                pyx.create_func(
+                    # Function name
+                    '__init__',
+
+                    # Function args
+                    'self',
+
+                    # Function body
+                    ast.body.visit(self)
+                )
+            ),
+
+            # Create an instance of the class    
             f'{ast.identifier.string} = {namespace_def_function}()',
+            # Remove the original class, we don't need it anymore
             f'del {namespace_def_function}',
-            '',
-            '',
-            f'# End of namespace {ast.identifier.string}')
+            # Debug comment
+            f'# End of namespace {ast.identifier.string}'
+        )
 
     def translate(self, ast: NamespaceAST.Namespace) -> str:
+        # Macro translation uses the Visitor Pattern for a structure. Structure
+        # based off my memory of the Crafting Interpreters section on this
+        # adapted from translation rather than execution
+        #
+        # https://craftinginterpreters.com/evaluating-expressions.html
         return ast.visit(self)

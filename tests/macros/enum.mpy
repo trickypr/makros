@@ -1,9 +1,15 @@
 macro import enum
 import pytest
 
+import tokenize
+from typing import Optional, List
+
 enum Test:
     A
+    """Test Doc Comment"""
     B(val1: str, val2: str)
+    NoTypedArgs(val1, val2)
+    FancyTypedParameters(token: tokenize.TokenInfo, type_parameters: Optional[str], many_type_params: List[Optional[str]])
     Frog
 
 #

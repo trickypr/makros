@@ -1,6 +1,5 @@
 from typing import Optional
 
-
 def program(*args) -> str:
     """This is used for generating a block of code that is separated by newlines.
 
