@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "makros"
-version = "0.1.1"
+version = "0.3.0"
 description = "Modify and extend the Python language with (relative) ease"
 authors = ["trickypr <trickypr@icloud.com>"]
 license = "GPL-v3.0"
