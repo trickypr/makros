@@ -8,16 +8,15 @@ from makros import translate_folder
 # arguments via function parameters
 def cli(args=None):
     cli_parser = argparse.ArgumentParser(
-        description=
-        "Translates a macro python program into a python program and executes it"
+        description="Translates a macro python program into a python program and executes it"
     )
     cli_parser.add_argument("file", type=str, help="The file to translate")
-    cli_parser.add_argument('--coverage',
-                            help="Starts up coverage.py internally",
-                            action="store_true")
+    cli_parser.add_argument(
+        "--coverage", help="Starts up coverage.py internally", action="store_true"
+    )
     args = cli_parser.parse_args(args)
 
-    # To ensure that test coverage is correctly supported, we need to run a 
+    # To ensure that test coverage is correctly supported, we need to run a
     # specific function.
     #
     # We do not enable this by default, because I do not want to depend on
@@ -25,8 +24,8 @@ def cli(args=None):
     if args.coverage:
         print("Coverage requires the `coverage` module to be installed to function")
         import coverage
-        print(
-            'Coverage: Remember to set `COVERAGE_PROCESS_START` env variable')
+
+        print("Coverage: Remember to set `COVERAGE_PROCESS_START` env variable")
         coverage.process_startup()
 
     args_path = args.file
@@ -45,7 +44,7 @@ def cli(args=None):
 
     # Stackoverflow theft! Runs the file specified in the python interpreter,
     # replacing .mpy with .py
-    exec(open(current_file.replace('.mpy', '.py')).read())
+    exec(open(str(current_file).replace(".mpy", ".py")).read())
 
 
 if __name__ == "__main__":
