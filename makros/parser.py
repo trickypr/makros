@@ -66,6 +66,9 @@ class MakroParser:
         output = ""
 
         for token in tokens:
+            # We need to keep track of by how much each line is indented, so if
+            # a macro is inside of an indented block (e.g. a function), the
+            # code that is outputted will still correctly execute.
             if token.type == tokenize.INDENT:
                 self.current_indentation += token.string
 
@@ -75,6 +78,8 @@ class MakroParser:
             
             if  token.type == tokenize.DEDENT:
                 self.current_indentation = self.current_indentation[:-len(token.string)]
+            
+            # End of indentation correction
 
             # If the token is of type name, we need to check if the token will
             # trigger a macro and, if it will, pass it over to that macro to
@@ -84,23 +89,37 @@ class MakroParser:
                 # because it requires some more complex logic than a standard
                 # macro, i.e. access to the available_macros List
                 if token.string == 'macro':
+                    # Grab a copy of the parser
                     parser = macro_import.Parser()
 
+                    # Parse the macro. Note that we will not be using the
+                    # translate module of the macro, as we have to handle custom
+                    # state within this class regarding it
                     macro_ast = parser.parse(tokens)
                     macro_string = macro_ast.module.string
 
+                    # If the macro attribute is specified, it means that it is
+                    # an external macro, which needs to have a different path
                     if macro_ast.macro:
                         macro_string += "."
                         macro_string += macro_ast.macro.string
 
+                    # Add the macro to the list of available macros after the
+                    # resolver method has found it
                     self.available_macros.append(
                         self.global_controller._resolver.resolve(macro_string))
-                    output += f"# Macro imported: {macro_string}\n"
 
+                    # Provide a reference comment to the developer
+                    output += f"# Macro imported: {macro_string}\n"
+                    
+                    # Don't let anything else touch this macro
                     continue
 
+                # Check if the macro is actually a macro. If it is, enabled will
+                # be set to true. The logic is not here, because it is messy
                 enabled, returned = self._parse_macro(tokens, token)
 
+                # The returned value will be empty if the macro is not enabled
                 output += returned
 
                 # Enabled will only be true if parse_macro has found a macro. So
@@ -178,16 +197,22 @@ class MakroParser:
             Tuple[bool, str]: The status of the macro, the first one is if a macro was found and the second one is its output
         """
 
+        # Search through the macros that have been imported into this file and
+        # see if the trigger token of any of them matches the current token
         for macro in self.available_macros:
             if macro.trigger_token.string == token.string:
+                # The parser class is imported when the macro is imported. Here
+                # we just retrieve the parser class
                 Parser = macro.parser_module.Parser
                 parser = Parser()
 
+                # Parsers **MUST** always have a parse function, otherwise they
+                # are not a parser. This is layed out in the implementation docs
                 macro_ast = parser.parse(tokens)
 
                 # If there is a linter, we should run it. There is not
-                # currently any linters, but may as well add the
-                # infrastructure.
+                # currently any linters, and the code is not tested, but may as 
+                # well add the infrastructure.
                 if hasattr(macro.parser_module, 'Linter'):
                     Linter = macro.parser_module.Linter
                     linter = Linter()
