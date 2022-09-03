@@ -14,6 +14,7 @@ def cli(args=None):
     cli_parser.add_argument(
         "--coverage", help="Starts up coverage.py internally", action="store_true"
     )
+    cli_parser.add_argument('--convert', help="Will only convert the specified python file", action="store_true")
     args = cli_parser.parse_args(args)
 
     # To ensure that test coverage is correctly supported, we need to run a
@@ -44,7 +45,8 @@ def cli(args=None):
 
     # Stackoverflow theft! Runs the file specified in the python interpreter,
     # replacing .mpy with .py
-    exec(open(str(current_file).replace(".mpy", ".py")).read())
+    if not args.convert:
+        exec(open(str(current_file).replace(".mpy", ".py")).read())
 
 
 if __name__ == "__main__":
