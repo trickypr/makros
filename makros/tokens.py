@@ -52,6 +52,8 @@ class TokenCase:
 
         return True
 
+class TokenException(Exception):
+    pass
 
 class Tokens:
     """
@@ -87,16 +89,17 @@ class Tokens:
         print(
             f"[bold red]Error at line {token_something_else.start[1]}:[/bold red] {message}"
         )
-        print(f"\t | {token_something_else.line}")
+        print(f"\t[white] | {token_something_else.line}[/white]")
         # NOTE: This will not correctly handle multiline tokens
         print(
-            f"\t  {' ' * token_something_else.start[0]} {'¯' * (token_something_else.end[1] - token_something_else.start[0])}"
+            f"\t[yellow]  {' ' * token_something_else.start[0]} {'¯' * (token_something_else.end[1] - token_something_else.start[0])}[/yellow]"
         )
-        print(f"\t  {' ' * token_something_else.start[0]} Error found here")
-        print()
-        print("Full traceback:")
+        print(f"\t[yellow]  {' ' * token_something_else.start[0]} Error found here[/yellow]")
 
-        raise Exception()
+        # Throw us out of the parser. This error will be caught by the CLI but
+        # should still provide a backtrace if anyone is using this in a custom
+        # build system
+        raise TokenException()
 
     def peek(self) -> tokenize.TokenInfo:
         """
@@ -148,7 +151,7 @@ class Tokens:
         if self.check(checker):
             return self.advance()
 
-        self.error(self.peek(), f"Expected {tokenize.tok_name[checker._token_type]}, found {tokenize.tok_name[self.peek().type]} {failure_message}")
+        self.error(self.peek(), f"{failure_message}, found '{self.peek().string}'")
 
     def check(self, checker: TokenCase) -> bool:
         """Checks the next token against the next token in the buffer

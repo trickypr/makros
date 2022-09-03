@@ -3,6 +3,7 @@ import pathlib
 import sys
 
 from makros import translate_folder
+from makros.tokens import TokenException
 
 # Poetry will bind the CLI to a function rather than a file and pass the
 # arguments via function parameters
@@ -41,7 +42,16 @@ def cli(args=None):
     current_file = pathlib.Path(args_path).absolute()
     current_folder = pathlib.Path(current_file).parent.absolute()
 
-    translate_folder(current_folder)
+    try:
+        translate_folder(current_folder)
+    except TokenException:
+        # This is only going to provie helpful errors for parser developers, so
+        # we can mostly ignore it
+        sys.exit(1)
+    except KeyboardInterrupt:
+        # No one cares about the keyboard interupt event. We want to silently
+        # kill the program if one is thrown
+        sys.exit(0)
 
     # Stackoverflow theft! Runs the file specified in the python interpreter,
     # replacing .mpy with .py
