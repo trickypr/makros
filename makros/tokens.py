@@ -86,15 +86,19 @@ class Tokens:
 
         from rich import print
 
+        # f-strings cannot contain backslashes and this has a new line at the 
+        # end
+        line = token_something_else.line.replace('\n', '')
+
         print(
             f"[bold red]Error at line {token_something_else.start[1]}:[/bold red] {message}"
         )
-        print(f"\t[white] | {token_something_else.line}[/white]")
+        print(f"\t[white] | {line}[/white]")
         # NOTE: This will not correctly handle multiline tokens
         print(
-            f"\t[yellow]  {' ' * token_something_else.start[0]} {'¯' * (token_something_else.end[1] - token_something_else.start[0])}[/yellow]"
+            f"\t[yellow]    {' ' * token_something_else.start[0]}{'¯' * (token_something_else.end[1] - token_something_else.start[0])}[/yellow]"
         )
-        print(f"\t[yellow]  {' ' * token_something_else.start[0]} Error found here[/yellow]")
+        print(f"\t[yellow]    {' ' * token_something_else.start[0]}Error found here[/yellow]")
 
         # Throw us out of the parser. This error will be caught by the CLI but
         # should still provide a backtrace if anyone is using this in a custom
