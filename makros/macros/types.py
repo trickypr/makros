@@ -35,7 +35,7 @@ class MacroTranslator(ABC):
     Note: You must name the class that extends this ``Translator`` or else it
     will not be picked up by makros
 
-    When implementing a translator, I recommend that you implement it using the
+    When implementing a translator, I recommend that you use the
     visitor pattern. For more information, `crafting interpreters has great documentation <https://craftinginterpreters.com/evaluating-expressions.html>`_.
     """
 

@@ -2,7 +2,10 @@
 
 # Makros
 
-Extend the Python language with (relative) ese
+Extend the Python language with (relative) ease
+
+![Codecov](https://img.shields.io/codecov/c/github/trickypr/makros?style=flat-square)
+![PyPI](https://img.shields.io/pypi/v/makros?style=flat-square)
 
 </div>
 
@@ -44,4 +47,4 @@ Then just run it with makros:
 makros my_file.mpy
 ```
 
-For more info, please [read our docs](https://makros.trickypr.com/docs/).
+For more info, please [read our docs](https://makros.trickypr.com/docs/), or read the [examples](https://github.com/trickypr/makros/tree/main/examples).
