@@ -255,7 +255,19 @@ class Translator(MacroTranslator):
                         'self, other',
                         
                         # Function body
-                        "return isinstance(self, other)"
+                        pyx.program(
+                            # If comparing types that are not instances (e.g.
+                            # a string with an enum), a crash would occur, to
+                            # fix this, we can return false if there is an error
+                            'try:',
+                            pyx.indent(
+                                "return isinstance(self, other)"
+                            ),
+                            'except:',
+                            pyx.indent(
+                                'return False'
+                            )
+                        ) 
                     ) # end __eq__
                 ),
 

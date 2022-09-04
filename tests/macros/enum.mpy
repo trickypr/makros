@@ -34,3 +34,9 @@ print("[TEST: Enum] Not equality")
 assert testA != Test.B
 assert testB != Test.A
 assert testFrog != Test.A
+
+# Ensure that asserts against random types do not crash the program
+assert testA != "Test"
+assert testB != "Test"
+assert testFrog != "Test"
+
