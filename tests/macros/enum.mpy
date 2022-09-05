@@ -35,6 +35,10 @@ assert testA != Test.B
 assert testB != Test.A
 assert testFrog != Test.A
 
+# Comparing two enums should not fail
+assert testB != testFrog
+assert testA == testA
+
 # Ensure that asserts against random types do not crash the program
 assert testA != "Test"
 assert testB != "Test"

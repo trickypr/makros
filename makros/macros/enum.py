@@ -265,7 +265,7 @@ class Translator(MacroTranslator):
                             ),
                             'except:',
                             pyx.indent(
-                                'return False'
+                                'return type(self) is type(other)'
                             )
                         ) 
                     ) # end __eq__
