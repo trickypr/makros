@@ -9,7 +9,7 @@ from makros.tokens import TokenException
 # arguments via function parameters
 def cli(args=None):
     cli_parser = argparse.ArgumentParser(
-        description="Translates a macro python program into a python program and executes it"
+            description="Translates a macro python program into a python program and executes it. More detailed information is available at: https://makros.trickypr.com/docs/"
     )
     cli_parser.add_argument("file", type=str, help="The file to translate")
     cli_parser.add_argument(
