@@ -15,3 +15,5 @@ makros hello.mpy
 ```
 
 This will generate a file called `hello.py` with all of the comments stripped out of it. This file will be run by the `makros` command automatically, but it can be helpful for debugging and understanding the code that a specific macro may generate.
+
+Based on [Getting started](https://makros.trickypr.com/docs/usage/001_getting_started.html) in the docs.
